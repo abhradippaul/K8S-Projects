@@ -75,9 +75,55 @@ cd voting-app/manifests
 kubectl create ns voting-app
 ```
 
+**Create Storage class for dynamic volume provisioning**
+Since a kubeadm-based Kubernetes cluster does not come with a default storage provisioner, we need to install a dynamic storage provisioner to automatically create PersistentVolumes (PVs) when a PersistentVolumeClaim (PVC) is created. If we want to automatically create PVs using local storage on worker nodes, use OpenEBS LocalPV.
+
+Install OpenEBS:
+```
+kubectl apply -f https://openebs.github.io/charts/openebs-operator.yaml
+```
+Verify OpenEBS is deployed:
+```
+kubectl get all -n openebs
+```
+You should see output like this:
+```
+NAME                                                READY   STATUS    RESTARTS        AGE
+pod/openebs-localpv-provisioner-6787b599b9-ksvlw    1/1     Running   6 (3h40m ago)   4d15h
+pod/openebs-ndm-cluster-exporter-7bfd5746f4-mxcsz   1/1     Running   4 (3h42m ago)   4d15h
+pod/openebs-ndm-gzsm2                               1/1     Running   6 (3h41m ago)   4d15h
+pod/openebs-ndm-node-exporter-p4q6d                 1/1     Running   4 (3h42m ago)   4d15h
+pod/openebs-ndm-node-exporter-xgmm7                 1/1     Running   4 (3h42m ago)   4d15h
+pod/openebs-ndm-operator-845b8858db-vwkpr           1/1     Running   2 (3h40m ago)   2d15h
+pod/openebs-ndm-q7k9c                               1/1     Running   6 (3h41m ago)   4d15h
+
+NAME                                           TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
+service/openebs-ndm-cluster-exporter-service   ClusterIP   None         <none>        9100/TCP   4d15h
+service/openebs-ndm-node-exporter-service      ClusterIP   None         <none>        9101/TCP   4d15h
+
+NAME                                       DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+daemonset.apps/openebs-ndm                 2         2         2       2            2           <none>          4d15h
+daemonset.apps/openebs-ndm-node-exporter   2         2         2       2            2           <none>          4d15h
+
+NAME                                           READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/openebs-localpv-provisioner    1/1     1            1           4d15h
+deployment.apps/openebs-ndm-cluster-exporter   1/1     1            1           4d15h
+deployment.apps/openebs-ndm-operator           1/1     1            1           4d15h
+
+NAME                                                      DESIRED   CURRENT   READY   AGE
+replicaset.apps/openebs-localpv-provisioner-6787b599b9    1         1         1       4d15h
+replicaset.apps/openebs-ndm-cluster-exporter-7bfd5746f4   1         1         1       4d15h
+replicaset.apps/openebs-ndm-operator-845b8858db           1         1         1       4d15h
+```
+
+To create a StorageClass that uses OpenEBS as a provisioner, run the command in the manifests folder: 
+```
+kubectl apply -f storageclass.yaml
+```
+
 **MONGO Database Setup**
 
-To create Mongo statefulset with Persistent volumes, run the command in manifests folder:
+To create a Mongo statefulset with Persistent volumes, run the command in the manifests folder:
 ```
 kubectl apply -f mongo.yaml
 ```
@@ -87,7 +133,7 @@ Mongo Service
 kubectl apply -f mongo-service.yaml
 ```
 
-On the `mongo-0` pod, initialise the Mongo database Replica set. In the terminal run the following command:
+On the `mongo-0` pod, initialise the Mongo database Replica set. In the terminal, run the following command:
 ```
 kubectl exec -it -n voting-app mongodb-0 -- mongosh
 
@@ -126,16 +172,18 @@ test> rs.initiate({
 }
 rs0 [direct: secondary] test>
 ```
+### Note: Exit this pod. Run the "exit" command two times.
 
-To confirm run this in the terminal:
+To confirm, run this in the terminal:
 ```
 kubectl exec -it -n voting-app mongo-0 -- mongosh --eval "rs.status()" | grep "PRIMARY\|SECONDARY"
 ```
+
 You should see the following output:
 ```
-      stateStr: 'PRIMARY',
-      stateStr: 'SECONDARY',
-      stateStr: 'SECONDARY',
+stateStr: 'PRIMARY',
+stateStr: 'SECONDARY',
+stateStr: 'SECONDARY',
 ```
 
 Load the Data in the database by running this command:
@@ -160,17 +208,17 @@ kubectl apply -f mongo-secret.yaml
 
 **API Setup**
 
-Create GO API deployment by running the following command:
+Create a GO API deployment by running the following command:
 ```
 kubectl apply -f backend.yaml
 ```
 
-Expose API deployment through service using the following command:
+Expose API deployment through the service using the following command:
 ```
 kubectl apply -f backend-service.yaml
 ```
 
-Port forwarding of backend service
+Port forwarding of the backend service
 ```
 k port-forward -n voting-app svc/backend-service 8080:8080 --address=0.0.0.0 > /dev/null &
 ```
@@ -182,18 +230,79 @@ You should see this output:
 
 **Frontend setup**
 
-Create the Frontend Deployment resource. In the terminal run the following command:
+Create the Frontend Deployment resource. In the terminal, run the following command:
 ```
 kubectl apply -f frontend.yaml
 ```
-## Note: Edit the frontend.yaml and change the env value for "REACT_APP_APIHOSTPORT" to the backend-service URL "<server-ip>:8080"
+### Note: Edit the frontend.yaml and change the env value for "REACT_APP_APIHOSTPORT" to the backend-service URL "<server-ip>:8080"
 
-Create a new Service resource of LoadBalancer type. In the terminal run the following command:
+Create a new Service resource of clusterip type. In the terminal, run the following command:
 ```
 kubectl apply -f frontend-service.yaml
 ```
+**Ingress setup**
 
+To set up the ingress, we first have to configure the NGINX Ingress controller.
 
+Nginx Ingress Controller:
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.1/deploy/static/provider/cloud/deploy.yaml
+```
+Verify Ingress Controller Installation:
+```
+kubectl get all -n ingress-nginx
+```
+You should see output like this:
+```
+NAME                                            READY   STATUS      RESTARTS   AGE
+pod/ingress-nginx-admission-create-7f8jj        0/1     Completed   0          25d
+pod/ingress-nginx-admission-patch-7np8x         0/1     Completed   0          25d
+pod/ingress-nginx-controller-64c9777558-j95sv   0/1     Running     0          14s
+
+NAME                                         TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+service/ingress-nginx-controller             LoadBalancer   10.99.149.157   <pending>     80:31610/TCP,443:32254/TCP   25d
+service/ingress-nginx-controller-admission   ClusterIP      10.103.5.11     <none>        443/TCP                      25d
+
+NAME                                       READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/ingress-nginx-controller   0/1     1            0           25d
+
+NAME                                                  DESIRED   CURRENT   READY   AGE
+replicaset.apps/ingress-nginx-controller-64c9777558   1         1         0       15s
+replicaset.apps/ingress-nginx-controller-b865cf559    0         0         0       25d
+
+NAME                                       COMPLETIONS   DURATION   AGE
+job.batch/ingress-nginx-admission-create   1/1           8s         25d
+job.batch/ingress-nginx-admission-patch    1/1           8s         25d
+```
+We have to change the service type for "ingress-nginx-controller" in "ingress-nginx" "LoadBalancer" to "NodePort" because this is a kubeadm-based setup loadbalancer service will not automatically work. 
+
+Change the service type. In the terminal, run the following command, and in the manifest search for "type: LoadBalancer" and change to "type: NodePort":
+```
+kubectl edit svc -n ingress-nginx ingress-nginx-controller
+```
+Verify the service:
+```
+kubectl get svc -n ingress-nginx
+```
+You should see this output:
+```
+NAME                                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx-controller             NodePort    10.99.149.157   <none>        80:31610/TCP,443:32254/TCP   25d
+ingress-nginx-controller-admission   ClusterIP   10.103.5.11     <none>        443/TCP                      25d
+```
+Create the ingress resource. In the terminal, run the following command:
+```
+kubectl apply -f ingress.yaml
+```
+Verify the ingress resource:
+```
+kubectl get ingress -n voting-app
+```
+Your ingress resource should look like this. Address may differ, but there must be an address:
+```
+NAME                 CLASS   HOSTS   ADDRESS         PORTS   AGE
+voting-app-ingress   nginx   *       10.99.149.157   80      3d14h
+```
 
 Test the full end-to-end cloud native application
 
