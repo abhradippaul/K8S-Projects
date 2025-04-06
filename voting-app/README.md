@@ -64,7 +64,7 @@ Creating and deploying this cloud-native web voting application with Kubernetes 
 
 ## 📜 Deployment Instructions
 
-**Clone the github repo**
+**Clone the GitHub repo**
 ```
 git clone https://github.com/abhradippaul/K8S-Projects.git
 cd voting-app/manifests
@@ -172,7 +172,7 @@ test> rs.initiate({
 }
 rs0 [direct: secondary] test>
 ```
-### Note: Exit this pod. Run the "exit" command two times.
+### Note: Exit this pod. Run the "exit" command twice.
 
 To confirm, run this in the terminal:
 ```
@@ -306,14 +306,48 @@ voting-app-ingress   nginx   *       10.99.149.157   80      3d14h
 
 Test the full end-to-end cloud native application
 
- Using your local workstation's browser - browse to the URL created in the previous output.
+Open the url in browser http://<server-url>
+You should see the output like this:
 
-After the voting application has loaded successfully, vote by clicking on several of the **+1** buttons, this will generate AJAX traffic which will be sent back to the API via the API's assigned ELB.
+
+After the voting application has loaded successfully, vote by clicking on several of the **+1** buttons. This will generate AJAX traffic, which will be sent back to the API via the API's assigned ELB.
 
 
-Query the MongoDB database directly to observe the updated vote data. In the terminal execute the following command:
+Query the MongoDB database directly to observe the updated vote data. In the terminal, execute the following command:
 ```
 kubectl exec -it -n voting-app mongo-0 -- mongosh langdb --eval "db.languages.find().pretty()"
+```
+
+## Optional
+**Network Policy setup**
+
+Create a network policy to secure the application further. In the terminal, run the following command:
+```
+kubectl apply -f network-policy.yaml
+```
+Why we should use a network policy:
+
+
+
+**Horizontal Pod Autoscaling**
+HPA is used to scale the application horizontally according to the traffic. If traffic increases, the number of pods increases, and if the traffic decreases, then the number of pods decreases.
+
+Create HPA for frontend deployment:
+```
+kubectl apply -f frontend-autoscale.yaml
+```
+Create HPA for backend deployment:
+```
+kubectl apply -f backend-autoscale.yaml
+```
+Verify HPA:
+```
+kubectl get hpa -n voting-app -w
+```
+Verification of the autoscaler to determine if it is working or not:
+Creating a load tester pod:
+```
+kubectl run loadtester --image=busybox --command -- sh -c "while true;do wget -q -O- <server-url> > /dev/null;do wget -q -O- <server-url>:8080/ok > /dev/null;done"
 ```
 
 ## **Summary**
