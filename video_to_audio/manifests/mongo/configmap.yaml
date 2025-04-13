@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  MONGO_CONN_STR: mongodb://mongo-0.mongo-service:27017/video-to-audio
+kind: ConfigMap
+metadata:
+  name: mongo-cm
+  namespace: video-to-audio
