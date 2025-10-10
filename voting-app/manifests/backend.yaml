@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     app: backend
   name: backend
@@ -11,38 +10,36 @@ spec:
   selector:
     matchLabels:
       app: backend
-  strategy: {}
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: backend
     spec:
       containers:
-      - image: cloudacademydevops/api:v3
-        name: backend
-        ports:
-          - containerPort: 8080
-        env: 
-          - name: MONGO_CONN_STR
-            valueFrom:
-              configMapKeyRef: 
-                name: mongo-cm
-                key: MONGO_CONN_STR
-          - name: MONGO_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: mongo-secret
-                key: MONGO_INITDB_ROOT_USERNAME
-          - name: MONGO_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: mongo-secret
-                key: MONGO_INITDB_ROOT_PASSWORD
-        resources: 
-          requests: 
-            cpu: "10m"
-            memory: "20Mi"
-          limits:
-            cpu: "20m"
-            memory: "40Mi"
+        - image: cloudacademydevops/api:v3
+          name: backend
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MONGO_CONN_STR
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-cm
+                  key: MONGO_CONN_STR
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: MONGO_INITDB_ROOT_PASSWORD
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "20Mi"
+            limits:
+              cpu: "20m"
+              memory: "40Mi"

@@ -3,6 +3,5 @@ data:
   MONGO_CONN_STR: mongodb://mongo-0.mongo-service,mongo-1.mongo-service,mongo-2.mongo-service:27017/langdb?replicaSet=rs0
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   name: mongo-cm
   namespace: voting-app

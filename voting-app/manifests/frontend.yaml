@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     app: frontend
   name: frontend
@@ -11,25 +10,26 @@ spec:
   selector:
     matchLabels:
       app: frontend
-  strategy: {}
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: frontend
     spec:
       containers:
-      - image: cloudacademydevops/frontend:v11
-        name: frontend
-        ports:
-          - containerPort: 8080
-        env:
-          - name: REACT_APP_APIHOSTPORT
-            value: 35.225.221.208:8080
-        resources: 
-          requests:
-            cpu: "10m"
-            memory: "20Mi"
-          limits:
-            cpu: "20m"
-            memory: "40Mi"
+        - image: cloudacademydevops/frontend:v11
+          name: frontend
+          ports:
+            - containerPort: 8080
+          env:
+            - name: REACT_APP_APIHOSTPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: frontend-cm
+                  key: REACT_APP_APIHOSTPORT
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "20Mi"
+            limits:
+              cpu: "20m"
+              memory: "40Mi"

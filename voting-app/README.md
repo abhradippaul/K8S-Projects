@@ -1,8 +1,7 @@
-
-
 # 🗳️ Web Voting Application with K8S in GCP Kubeadm
 
 ### 🎯 Project Overview
+
 This application is built using a mix of technologies. It's designed to be accessible to users via the internet, allowing them to vote for their preferred programming language out of six choices: C#, Python, JavaScript, Go, Java, and NodeJS.
 
 ## 🛠️ Technical Stack
@@ -19,27 +18,27 @@ To deploy and manage this application effectively, we leverage Kubernetes and a 
 
 - ⚙️ 2. **Deployments**
 
-    - 🖥️ Backend Deployment: Deploys the backend application as a Kubernetes deployment with environment variables configured for MongoDB connectivity.
+  - 🖥️ Backend Deployment: Deploys the backend application as a Kubernetes deployment with environment variables configured for MongoDB connectivity.
 
-    - 🌐 Frontend Deployment: Deploys the frontend application, connecting it to the backend API.
+  - 🌐 Frontend Deployment: Deploys the frontend application, connecting it to the backend API.
 
-    - 💾 MongoDB StatefulSet: Deploys a MongoDB database as a StatefulSet to ensure persistent storage and replication.
+  - 💾 MongoDB StatefulSet: Deploys a MongoDB database as a StatefulSet to ensure persistent storage and replication.
 
 - 🔗 3. **Services**
 
-    - 🔙 Backend Service: Exposes the backend using a ClusterIP service.
+  - 🔙 Backend Service: Exposes the backend using a ClusterIP service.
 
-    - 🔜 Frontend Service: Exposes the frontend using a ClusterIP service.
+  - 🔜 Frontend Service: Exposes the frontend using a ClusterIP service.
 
-    - 🛢️ MongoDB Service: Exposes MongoDB using a ClusterIP service with no external access.
+  - 🛢️ MongoDB Service: Exposes MongoDB using a ClusterIP service with no external access.
 
 - 🌍 4. **Ingress**: Configures NGINX Ingress to route traffic to the frontend service.
 
 - 🔐 5. **ConfigMaps & Secrets**
 
-    - ⚙️ MongoDB ConfigMap: Stores database connection strings.
+  - ⚙️ MongoDB ConfigMap: Stores database connection strings.
 
-    - 🔑 MongoDB Secrets: Stores database credentials securely.
+  - 🔑 MongoDB Secrets: Stores database credentials securely.
 
 - 💾 6. **Storage Class**: Used to dynamically provision persistent volumes for MongoDB, ensuring data persistence and scalability.
 
@@ -61,16 +60,17 @@ Creating and deploying this cloud-native web voting application with Kubernetes 
 
 7. **Persistent Storage**: Understand how Kubernetes manages and provisions persistent storage for applications with state.
 
-
 ## 📜 Deployment Instructions
 
 **Clone the GitHub repo**
+
 ```
 git clone https://github.com/abhradippaul/K8S-Projects.git
 cd voting-app/manifests
 ```
 
 **Create CloudChamp Namespace**
+
 ```
 kubectl create ns voting-app
 ```
@@ -79,14 +79,19 @@ kubectl create ns voting-app
 Since a kubeadm-based Kubernetes cluster does not come with a default storage provisioner, we need to install a dynamic storage provisioner to automatically create PersistentVolumes (PVs) when a PersistentVolumeClaim (PVC) is created. If we want to automatically create PVs using local storage on worker nodes, use OpenEBS LocalPV.
 
 Install OpenEBS:
+
 ```
 kubectl apply -f https://openebs.github.io/charts/openebs-operator.yaml
 ```
+
 Verify OpenEBS is deployed:
+
 ```
 kubectl get all -n openebs
 ```
+
 You should see output like this:
+
 ```
 NAME                                                READY   STATUS    RESTARTS        AGE
 pod/openebs-localpv-provisioner-6787b599b9-ksvlw    1/1     Running   6 (3h40m ago)   4d15h
@@ -116,26 +121,42 @@ replicaset.apps/openebs-ndm-cluster-exporter-7bfd5746f4   1         1         1 
 replicaset.apps/openebs-ndm-operator-845b8858db           1         1         1       4d15h
 ```
 
-To create a StorageClass that uses OpenEBS as a provisioner, run the command in the manifests folder: 
+To create a StorageClass that uses OpenEBS as a provisioner, run the command in the manifests folder:
+
 ```
 kubectl apply -f storageclass.yaml
 ```
 
 **MONGO Database Setup**
 
+Create Mongo secret:
+
+```
+kubectl apply -f mongo-secret.yaml
+```
+
+Create Mongo configmap:
+
+```
+kubectl apply -f mongo-cm.yaml
+```
+
 To create a Mongo statefulset with Persistent volumes, run the command in the manifests folder:
+
 ```
 kubectl apply -f mongo.yaml
 ```
 
 Mongo Service
+
 ```
 kubectl apply -f mongo-service.yaml
 ```
 
 On the `mongo-0` pod, initialise the Mongo database Replica set. In the terminal, run the following command:
+
 ```
-kubectl exec -it -n voting-app mongodb-0 -- mongosh
+kubectl exec -it -n voting-app mongodb-0 -- mongo
 
 rs.initiate({
   _id: "rs0",
@@ -150,6 +171,7 @@ rs.initiate({
 Note: Wait until this command completes successfully, it typically takes 10-15 seconds to finish, and completes with the message: bye
 
 You should see the following output:
+
 ```
 test> rs.initiate({
 ...   _id: "rs0",
@@ -172,14 +194,17 @@ test> rs.initiate({
 }
 rs0 [direct: secondary] test>
 ```
+
 ### Note: Exit this pod. Run the "exit" command twice.
 
 To confirm, run this in the terminal:
+
 ```
-kubectl exec -it -n voting-app mongo-0 -- mongosh --eval "rs.status()" | grep "PRIMARY\|SECONDARY"
+kubectl exec -it -n voting-app mongo-0 -- mongo --eval "rs.status()" | grep "PRIMARY\|SECONDARY"
 ```
 
 You should see the following output:
+
 ```
 stateStr: 'PRIMARY',
 stateStr: 'SECONDARY',
@@ -187,8 +212,9 @@ stateStr: 'SECONDARY',
 ```
 
 Load the Data in the database by running this command:
+
 ```
-cat << EOF | kubectl exec -it -n voting-app mongo-0 -- mongosh
+cat << EOF | kubectl exec -it -n voting-app mongo-0 -- mongo
 use langdb;
 db.languages.insert({"name" : "csharp", "codedetail" : { "usecase" : "system, web, server-side", "rank" : 5, "compiled" : false, "homepage" : "https://dotnet.microsoft.com/learn/csharp", "download" : "https://dotnet.microsoft.com/download/", "votes" : 0}});
 db.languages.insert({"name" : "python", "codedetail" : { "usecase" : "system, web, server-side", "rank" : 3, "script" : false, "homepage" : "https://www.python.org/", "download" : "https://www.python.org/downloads/", "votes" : 0}});
@@ -201,58 +227,71 @@ db.languages.find().pretty();
 EOF
 ```
 
-Create Mongo secret:
-```
-kubectl apply -f mongo-secret.yaml
-```
-
 **API Setup**
 
 Create a GO API deployment by running the following command:
+
 ```
 kubectl apply -f backend.yaml
 ```
 
 Expose API deployment through the service using the following command:
+
 ```
 kubectl apply -f backend-service.yaml
 ```
 
 Port forwarding of the backend service
+
 ```
 k port-forward -n voting-app svc/backend-service 8080:8080 --address=0.0.0.0 > /dev/null &
 ```
 
 ## Note: You can access the backend service http://<server-ip>:8080/ok
+
 You should see this output:
 ![image](https://github.com/user-attachments/assets/9c591ae2-427d-4f62-b371-0a8721727785)
 
-
 **Frontend setup**
 
+Create the Frontend configmap:
+
+```
+kubectl apply -f frontend-cm.yaml
+```
+
 Create the Frontend Deployment resource. In the terminal, run the following command:
+
 ```
 kubectl apply -f frontend.yaml
 ```
+
 ### Note: Edit the frontend.yaml and change the env value for "REACT_APP_APIHOSTPORT" to the backend-service URL "<server-ip>:8080"
 
 Create a new Service resource of clusterip type. In the terminal, run the following command:
+
 ```
 kubectl apply -f frontend-service.yaml
 ```
+
 **Ingress setup**
 
 To set up the ingress, we first have to configure the NGINX Ingress controller.
 
 Nginx Ingress Controller:
+
 ```
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.1/deploy/static/provider/cloud/deploy.yaml
 ```
+
 Verify Ingress Controller Installation:
+
 ```
 kubectl get all -n ingress-nginx
 ```
+
 You should see output like this:
+
 ```
 NAME                                            READY   STATUS      RESTARTS   AGE
 pod/ingress-nginx-admission-create-7f8jj        0/1     Completed   0          25d
@@ -274,31 +313,43 @@ NAME                                       COMPLETIONS   DURATION   AGE
 job.batch/ingress-nginx-admission-create   1/1           8s         25d
 job.batch/ingress-nginx-admission-patch    1/1           8s         25d
 ```
-We have to change the service type for "ingress-nginx-controller" in "ingress-nginx" "LoadBalancer" to "NodePort" because this is a kubeadm-based setup loadbalancer service will not automatically work. 
+
+We have to change the service type for "ingress-nginx-controller" in "ingress-nginx" "LoadBalancer" to "NodePort" because this is a kubeadm-based setup loadbalancer service will not automatically work.
 
 Change the service type. In the terminal, run the following command, and in the manifest search for "type: LoadBalancer" and change to "type: NodePort":
+
 ```
 kubectl edit svc -n ingress-nginx ingress-nginx-controller
 ```
+
 Verify the service:
+
 ```
 kubectl get svc -n ingress-nginx
 ```
+
 You should see this output:
+
 ```
 NAME                                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
 ingress-nginx-controller             NodePort    10.99.149.157   <none>        80:31610/TCP,443:32254/TCP   25d
 ingress-nginx-controller-admission   ClusterIP   10.103.5.11     <none>        443/TCP                      25d
 ```
+
 Create the ingress resource. In the terminal, run the following command:
+
 ```
 kubectl apply -f ingress.yaml
 ```
+
 Verify the ingress resource:
+
 ```
 kubectl get ingress -n voting-app
 ```
+
 Your ingress resource should look like this. Address may differ, but there must be an address:
+
 ```
 NAME                 CLASS   HOSTS   ADDRESS         PORTS   AGE
 voting-app-ingress   nginx   *       10.99.149.157   80      3d14h
@@ -306,46 +357,85 @@ voting-app-ingress   nginx   *       10.99.149.157   80      3d14h
 
 Test the full end-to-end cloud native application
 
-Open the url in browser http://<server-url>
+Open the url in browser http://<server-url:PORT>
 You should see the output like this:
-
 
 After the voting application has loaded successfully, vote by clicking on several of the **+1** buttons. This will generate AJAX traffic, which will be sent back to the API via the API's assigned ELB.
 
-
 Query the MongoDB database directly to observe the updated vote data. In the terminal, execute the following command:
+
 ```
-kubectl exec -it -n voting-app mongo-0 -- mongosh langdb --eval "db.languages.find().pretty()"
+kubectl exec -it -n voting-app mongo-0 -- mongo langdb --eval "db.languages.find().pretty()"
 ```
 
 ## Optional
+
 **Network Policy setup**
 
+We can access the db from any other pod in the cluster but in network policy we will restrict that. Create a external pod which should not able to access the pod.
+
+```
+kubectl apply -f external-user.yaml
+```
+
+But this pod can access the mongodb pod.
+
+```
+kubectl exec -it -n voting-app external-user -- telnet mongo-service 27017
+```
+
 Create a network policy to secure the application further. In the terminal, run the following command:
+
 ```
 kubectl apply -f network-policy.yaml
 ```
+
+After Creating the Network Policy this will not work.
+
+```
+kubectl exec -it -n voting-app external-user -- telnet mongo-service 27017
+```
+
 Why we should use a network policy:
-
-
 
 **Horizontal Pod Autoscaling**
 HPA is used to scale the application horizontally according to the traffic. If traffic increases, the number of pods increases, and if the traffic decreases, then the number of pods decreases.
 
+Before deploying HPA we need to first deploy kubernetes metrics server:
+
+```
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+```
+
+Change deployment settings in metrics server:
+
+```
+kubectl edit deploy -n kube-system metrics-server
+
+Add args "- --kubelet-insecure-tls"
+```
+
 Create HPA for frontend deployment:
+
 ```
 kubectl apply -f frontend-autoscale.yaml
 ```
+
 Create HPA for backend deployment:
+
 ```
 kubectl apply -f backend-autoscale.yaml
 ```
+
 Verify HPA:
+
 ```
 kubectl get hpa -n voting-app -w
 ```
+
 Verification of the autoscaler to determine if it is working or not:
 Creating a load tester pod:
+
 ```
 kubectl run loadtester --image=busybox --command -- sh -c "while true;do wget -q -O- <server-url> > /dev/null;do wget -q -O- <server-url>:8080/ok > /dev/null;done"
 ```
