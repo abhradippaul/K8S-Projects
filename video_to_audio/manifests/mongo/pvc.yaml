@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mongo-pvc
-  namespace: video-to-audio
-spec:
-  storageClassName: manual
-  accessModes:
-    - ReadWriteOnce

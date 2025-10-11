@@ -16,12 +16,8 @@ spec:
       labels:
         app: mongo
     spec:
-      volumes:
-        - name: mongo-data
-          persistentVolumeClaim:
-            claimName: mongo-pvc
       containers:
-      - image: mongo:4.2
+      - image: mongo:4.0.8
         name: mongo
         volumeMounts:
           - mountPath: "/data/db"
@@ -38,3 +34,12 @@ spec:
           limits:
             cpu: "200m"
             memory: "400Mi"
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: mannual
+        resources:
+          requests:
+            storage: 200Mi
