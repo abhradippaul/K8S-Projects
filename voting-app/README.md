@@ -387,7 +387,7 @@ kubectl exec -it -n voting-app external-user -- telnet mongo-service 27017
 Create a network policy to secure the application further. In the terminal, run the following command:
 
 ```
-kubectl apply -f network-policy.yaml
+kubectl apply -f networkpolicy.yaml
 ```
 
 After Creating the Network Policy this will not work.
@@ -437,7 +437,9 @@ Verification of the autoscaler to determine if it is working or not:
 Creating a load tester pod:
 
 ```
-kubectl run loadtester --image=busybox --command -- sh -c "while true;do wget -q -O- <server-url> > /dev/null;do wget -q -O- <server-url>:8080/ok > /dev/null;done"
+kubectl apply -f frontend-loadtester.yaml
+
+kubectl apply -f backend-loadtester.yaml
 ```
 
 ## **Summary**

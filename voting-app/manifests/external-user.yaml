@@ -12,6 +12,5 @@ spec:
         - "3600"
       image: busybox
       name: external-user
-      resources: {}
   dnsPolicy: ClusterFirst
   restartPolicy: Always
