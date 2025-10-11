@@ -12,6 +12,9 @@ This application is built using a mix of technologies. It's designed to be acces
 
 ## 🚀 Kubernetes Resources
 
+<img width="1138" height="821" alt="diagram-export-10-11-2025-5_47_47-PM" src="https://github.com/user-attachments/assets/99e85454-5f62-4a81-9f3c-b147e4b137f7" />
+
+
 To deploy and manage this application effectively, we leverage Kubernetes and a variety of its resources:
 
 - 📂 1. **Namespaces**: It isolates resources within a Kubernetes cluster, providing logical separation between different environments or applications and helping manage resource quotas and access control efficiently.
