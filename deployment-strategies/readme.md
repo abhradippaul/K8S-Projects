@@ -1,21 +1,22 @@
 # Deployment strategies in Kubernetes
 
-## Project Overview
-
 Strategy ->
 Recreate (Pod delete then recreate, Downtime YES, Production NO),
 Rolling Update (First create then terminate, Downtime ALMOST NO, Production ALMOST YES),
-Blue Green (Create copy of the env, Downtime NO, Production YES),
-Canary (Distribute load between prev version and current version, Downtime NO, Production YES),
+Blue Green (Create a copy of the env, Downtime NO, Production YES),
+Canary (Distribute load between the previous version and current version, Downtime NO, Production YES),
 Progressive Delivery (ArgoCD Rollouts same as canary, Downtime NO, Production YES),
 A/B Testing (Same as Blue Green, Downtime ALMOST NO, Production NO),
 Shadown (Same as Blue Green, Downtime YES, Production NO),
 
 Image -> amitabhdevops/online_shop, amitabhdevops/online_shop_without_footer
 
+## Project Overview
+<img width="1584" height="943" alt="diagram-export-10-15-2025-1_56_11-AM" src="https://github.com/user-attachments/assets/709f7e6c-2fb0-4eb2-b1fa-4f3588c4c810" />
+
 ## Prerequisite:
 
-### Clone the github project and go to the deployment-strategies folder
+### Clone the GitHub project and go to the deployment-strategies folder
 
 ```
 git clone https://github.com/abhradippaul/K8S-Projects.git
