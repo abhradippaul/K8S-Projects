@@ -1,6 +1,7 @@
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
+  namespace: voting-app
   name: frontend
 spec:
   maxReplicas: 10
