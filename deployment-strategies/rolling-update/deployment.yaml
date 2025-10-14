@@ -4,14 +4,17 @@ metadata:
   labels:
     app: online-shop
   name: online-shop-deploy
-  namespace: recreate-ns
+  namespace: rollingupdate-ns
 spec:
   replicas: 5
   selector:
     matchLabels:
       app: online-shop
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate: 
+      maxSurge: 1 #Extra pod
+      maxUnavailable: 0 #Unavailable pod
   template:
     metadata:
       labels:

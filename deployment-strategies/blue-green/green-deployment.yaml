@@ -2,24 +2,27 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: online-shop
-  name: online-shop-deploy
-  namespace: recreate-ns
+    app: online-shop-green
+  name: online-shop-green-deploy
+  namespace: bluegreen-ns
 spec:
-  replicas: 5
+  replicas: 2
   selector:
     matchLabels:
-      app: online-shop
+      app: online-shop-green
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate: 
+      maxSurge: 1 #Extra pod
+      maxUnavailable: 0 #Unavailable pod
   template:
     metadata:
       labels:
-        app: online-shop
+        app: online-shop-green
     spec:
       containers:
-        - image: amitabhdevops/online_shop
-          name: online-shop-container
+        - image: amitabhdevops/online_shop_without_footer
+          name: online-shop-container-green
           ports:
             - containerPort: 3000
           resources:

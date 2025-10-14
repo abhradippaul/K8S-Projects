@@ -1,0 +1,14 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gatewayapi
+  namespace: bluegreen-ns
+spec:
+  gatewayClassName: nginx
+  listeners:
+  - protocol: HTTP
+    port: 3000
+    name: http
+    allowedRoutes:
+      namespaces:
+        from: Same

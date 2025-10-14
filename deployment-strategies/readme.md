@@ -1,5 +1,7 @@
 # Deployment strategies in Kubernetes
 
+## Project Overview
+
 Strategy ->
 Recreate (Pod delete then recreate, Downtime YES, Production NO),
 Rolling Update (First create then terminate, Downtime ALMOST NO, Production ALMOST YES),
@@ -92,7 +94,28 @@ Create request client pod:
 k apply -f client.yaml
 ```
 
-## Recreate Strategy
+## Install NGINX Gateway Fabric Setup
+
+```
+kubectl apply --server-side -f https://raw.githubusercontent.com/nginx/nginx-gateway-fabric/v2.1.4/deploy/crds.yaml
+
+kubectl apply -f https://raw.githubusercontent.com/nginx/nginx-gateway-fabric/v2.1.4/deploy/default/deploy.yaml
+```
+
+Verify installation:
+
+```
+kubectl get pods -n nginx-gateway
+kubectl get gatewayclass
+```
+
+## Gateway API Setup
+
+```
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+```
+
+## Recreate Deployment Strategy
 
 ### Goto the recreate folder
 
@@ -106,4 +129,105 @@ kubectl apply -f .
 
 ```
 kubectl set image -n recreate-ns deployment/online-shop-deploy online-shop-container=amitabhdevops/online_shop_without_footer
+```
+
+### Output
+
+All previous pods will be deleted first, then the new pod will be created using this recreate strategy. This involves downtime.
+
+```
+NAME                                  READY   STATUS              RESTARTS   AGE
+online-shop-deploy-556d9f8cd4-2fwtd   0/1     ContainerCreating   0          2s
+online-shop-deploy-556d9f8cd4-5stxz   0/1     ContainerCreating   0          2s
+online-shop-deploy-556d9f8cd4-797pp   0/1     ContainerCreating   0          2s
+online-shop-deploy-556d9f8cd4-ghqhn   0/1     ContainerCreating   0          2s
+online-shop-deploy-556d9f8cd4-q2qk2   0/1     ContainerCreating   0          2s
+```
+
+### Delete the images downloaded by kubernetes
+
+```
+crictl rmi amitabhdevops/online_shop amitabhdevops/online_shop_without_footer
+```
+
+## Rolling Update Deployment Strategy
+
+### Goto the rolling-update folder
+
+```
+cd rolling-update
+kubectl create ns rollingupdate-ns
+kubectl apply -f .
+```
+
+### Change the image of the deployment to initilize deployment strategy:
+
+```
+kubectl set image -n rollingupdate-ns deployment/online-shop-deploy online-shop-container=amitabhdevops/online_shop_without_footer
+```
+
+### Output
+
+Using this rolling update strategy, only one pod will be recreated in advance, and then the previous pod will be terminated to avoid downtime.
+
+```
+NAME                                  READY   STATUS              RESTARTS   AGE
+online-shop-deploy-556d9f8cd4-bcw2g   0/1     ContainerCreating   0          1s
+online-shop-deploy-556d9f8cd4-cls65   1/1     Running             0          15s
+online-shop-deploy-556d9f8cd4-vkmvw   1/1     Running             0          4s
+online-shop-deploy-556d9f8cd4-x2r4z   1/1     Running             0          18s
+online-shop-deploy-566ccbc757-jvxjq   1/1     Running             0          64s
+online-shop-deploy-566ccbc757-k796t   1/1     Running             0          64s
+online-shop-deploy-566ccbc757-xt9tt   1/1     Terminating         0          64s
+
+NAME                                  READY   STATUS              RESTARTS   AGE
+online-shop-deploy-556d9f8cd4-6z2dk   0/1     ContainerCreating   0          1s
+online-shop-deploy-556d9f8cd4-bcw2g   1/1     Running             0          4s
+online-shop-deploy-556d9f8cd4-cls65   1/1     Running             0          18s
+online-shop-deploy-556d9f8cd4-vkmvw   1/1     Running             0          7s
+online-shop-deploy-556d9f8cd4-x2r4z   1/1     Running             0          21s
+online-shop-deploy-566ccbc757-jvxjq   1/1     Running             0          67s
+online-shop-deploy-566ccbc757-k796t   0/1     Completed           0          67s
+```
+
+### Delete the images downloaded by kubernetes
+
+```
+crictl rmi amitabhdevops/online_shop amitabhdevops/online_shop_without_footer
+```
+
+## Blue Green Deployment Strategy
+
+### Goto the rolling-update folder
+
+```
+cd blue-green
+kubectl create ns bluegreen-ns
+kubectl apply -f .
+```
+
+### Output
+
+Using this blue green deployment strategies we can distribute traffic using gateway api between old deployment and new deployment as needed.
+
+```
+
+```
+
+## Canary Deployment Strategy
+
+### Goto the canary folder
+
+```
+cd canary
+kubectl create ns canary-ns
+kubectl apply -f .
+```
+
+### Output
+
+Using this canary deployment strategies we can distribute traffic between old deployment and new deployment using deployment replicas.
+
+```
+
 ```

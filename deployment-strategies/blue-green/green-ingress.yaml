@@ -1,10 +1,11 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: recreate-deployment-strategies
-  namespace: recreate-ns
+  name: green-deployment-strategies
+  namespace: bluegreen-ns
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-weight: "20"
 spec:
   ingressClassName: nginx
   rules:
@@ -14,6 +15,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: online-shop-svc
+                name: online-shop-green-svc
                 port:
                   number: 3000

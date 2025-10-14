@@ -3,22 +3,22 @@ kind: Deployment
 metadata:
   labels:
     app: online-shop
-  name: online-shop-deploy
-  namespace: recreate-ns
+    version: v2
+  name: online-shop-v2-deploy
+  namespace: canary-ns
 spec:
-  replicas: 5
+  replicas: 1
   selector:
     matchLabels:
       app: online-shop
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:
         app: online-shop
+        version: v2
     spec:
       containers:
-        - image: amitabhdevops/online_shop
+        - image: amitabhdevops/online_shop_without_footer
           name: online-shop-container
           ports:
             - containerPort: 3000

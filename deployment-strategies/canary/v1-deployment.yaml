@@ -3,19 +3,19 @@ kind: Deployment
 metadata:
   labels:
     app: online-shop
-  name: online-shop-deploy
-  namespace: recreate-ns
+    version: v1
+  name: online-shop-v1-deploy
+  namespace: canary-ns
 spec:
-  replicas: 5
+  replicas: 4
   selector:
     matchLabels:
       app: online-shop
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:
         app: online-shop
+        version: v1
     spec:
       containers:
         - image: amitabhdevops/online_shop
