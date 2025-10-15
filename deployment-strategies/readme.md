@@ -12,6 +12,7 @@ Shadown (Same as Blue Green, Downtime YES, Production NO),
 Image -> amitabhdevops/online_shop, amitabhdevops/online_shop_without_footer
 
 ## Project Overview
+
 <img width="1584" height="943" alt="diagram-export-10-15-2025-1_56_11-AM" src="https://github.com/user-attachments/assets/709f7e6c-2fb0-4eb2-b1fa-4f3588c4c810" />
 
 ## Prerequisite:
@@ -95,12 +96,18 @@ Create request client pod:
 k apply -f client.yaml
 ```
 
+## Gateway API Setup
+
+```
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+```
+
 ## Install NGINX Gateway Fabric Setup
 
 ```
 kubectl apply --server-side -f https://raw.githubusercontent.com/nginx/nginx-gateway-fabric/v2.1.4/deploy/crds.yaml
 
-kubectl apply -f https://raw.githubusercontent.com/nginx/nginx-gateway-fabric/v2.1.4/deploy/default/deploy.yaml
+kubectl apply -f https://raw.githubusercontent.com/nginx/nginx-gateway-fabric/v2.1.4/deploy/nodeport/deploy.yaml
 ```
 
 Verify installation:
@@ -110,10 +117,12 @@ kubectl get pods -n nginx-gateway
 kubectl get gatewayclass
 ```
 
-## Gateway API Setup
-
 ```
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+NAME                             READY   STATUS    RESTARTS        AGE
+nginx-gateway-86c78fbbcf-xkzp8   1/1     Running   2 (3m43s ago)   3m46s
+
+NAME    CONTROLLER                                   ACCEPTED   AGE
+nginx   gateway.nginx.org/nginx-gateway-controller   True       3m46s
 ```
 
 ## Recreate Deployment Strategy
@@ -145,11 +154,17 @@ online-shop-deploy-556d9f8cd4-ghqhn   0/1     ContainerCreating   0          2s
 online-shop-deploy-556d9f8cd4-q2qk2   0/1     ContainerCreating   0          2s
 ```
 
-### Delete the images downloaded by kubernetes
+### Access the website
 
 ```
-crictl rmi amitabhdevops/online_shop amitabhdevops/online_shop_without_footer
+kubectl get svc -n ingress-nginx
+
+NAME                                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx-controller             NodePort    10.100.217.244   <none>        80:31486/TCP,443:31907/TCP   139m
+ingress-nginx-controller-admission   ClusterIP   10.102.33.172    <none>        443/TCP
 ```
+
+Open browser and type http://NODE-IP:31486
 
 ## Rolling Update Deployment Strategy
 
@@ -191,11 +206,17 @@ online-shop-deploy-566ccbc757-jvxjq   1/1     Running             0          67s
 online-shop-deploy-566ccbc757-k796t   0/1     Completed           0          67s
 ```
 
-### Delete the images downloaded by kubernetes
+### Access the website
 
 ```
-crictl rmi amitabhdevops/online_shop amitabhdevops/online_shop_without_footer
+kubectl get svc -n ingress-nginx
+
+NAME                                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx-controller             NodePort    10.100.217.244   <none>        80:31486/TCP,443:31907/TCP   139m
+ingress-nginx-controller-admission   ClusterIP   10.102.33.172    <none>        443/TCP
 ```
+
+Open browser and type http://NODE-IP:31486
 
 ## Blue Green Deployment Strategy
 
@@ -230,5 +251,23 @@ kubectl apply -f .
 Using this canary deployment strategies we can distribute traffic between old deployment and new deployment using deployment replicas.
 
 ```
+NAME                                    READY   STATUS    RESTARTS   AGE
+online-shop-v1-deploy-cb6db7766-28lfj   1/1     Running   0          29m
+online-shop-v1-deploy-cb6db7766-mqtk9   1/1     Running   0          29m
+online-shop-v2-deploy-5988f986d-9svn4   1/1     Running   0          26m
+online-shop-v2-deploy-5988f986d-bhq6g   1/1     Running   0          2m46s
+online-shop-v2-deploy-5988f986d-bwxgj   1/1     Running   0          29m
+online-shop-v2-deploy-5988f986d-jcrtw   1/1     Running   0          2m46s
+```
+
+### Access the website
 
 ```
+kubectl get svc -n ingress-nginx
+
+NAME                                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx-controller             NodePort    10.100.217.244   <none>        80:31486/TCP,443:31907/TCP   139m
+ingress-nginx-controller-admission   ClusterIP   10.102.33.172    <none>        443/TCP
+```
+
+Open browser and type http://NODE-IP:31486

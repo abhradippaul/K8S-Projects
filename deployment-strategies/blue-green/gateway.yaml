@@ -1,8 +1,8 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: gatewayapi
-  namespace: bluegreen-ns
+  name: nginx-gateway
+  namespace: nginx-gateway
 spec:
   gatewayClassName: nginx
   listeners:
@@ -11,4 +11,4 @@ spec:
     name: http
     allowedRoutes:
       namespaces:
-        from: Same
+        from: All
