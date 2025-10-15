@@ -4,7 +4,7 @@ metadata:
   labels:
     app: canary
     version: v1
-  name: canary-v1-deploy
+  name: canary-v1-deployment
   namespace: canary-ns
 spec:
   replicas: 2
@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - image: abhradippaul/deployment-strategies:v1
-          name: online-shop-container
+          name: canary-container
           ports:
             - containerPort: 80
           resources:

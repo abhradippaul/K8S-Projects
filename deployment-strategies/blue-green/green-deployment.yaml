@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app: bluegreen-green
-  name: bluegreen-green-deploy
+  name: bluegreen-green-deployment
   namespace: bluegreen-ns
 spec:
   replicas: 2

@@ -4,7 +4,7 @@ metadata:
   labels:
     app: canary
     version: v2
-  name: canary-v2-deploy
+  name: canary-v2-deployment
   namespace: canary-ns
 spec:
   replicas: 2
