@@ -13,9 +13,9 @@ spec:
           type: PathPrefix
           value: /
       backendRefs:
-        - name: online-shop-blue-svc
-          port: 3000
+        - name: bluegreen-blue-svc
+          port: 80
           weight: 50
-        - name: online-shop-green-svc
-          port: 3000
+        - name: bluegreen-green-svc
+          port: 80
           weight: 50

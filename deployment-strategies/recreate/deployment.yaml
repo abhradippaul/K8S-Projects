@@ -2,26 +2,26 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: online-shop
-  name: online-shop-deploy
+    app: recreate
+  name: recreate-deployment
   namespace: recreate-ns
 spec:
   replicas: 5
   selector:
     matchLabels:
-      app: online-shop
+      app: recreate
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: online-shop
+        app: recreate
     spec:
       containers:
-        - image: amitabhdevops/online_shop
-          name: online-shop-container
+        - image: abhradippaul/deployment-strategies:v1
+          name: recreate-container
           ports:
-            - containerPort: 3000
+            - containerPort: 80
           resources:
             limits:
               cpu: 25m

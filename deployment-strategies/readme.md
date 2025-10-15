@@ -9,7 +9,7 @@ Progressive Delivery (ArgoCD Rollouts same as canary, Downtime NO, Production YE
 A/B Testing (Same as Blue Green, Downtime ALMOST NO, Production NO),
 Shadown (Same as Blue Green, Downtime YES, Production NO),
 
-Image -> amitabhdevops/online_shop, amitabhdevops/online_shop_without_footer
+Image -> abhradippaul/deployment-strategies:v1, abhradippaul/deployment-strategies:v2
 
 ## Project Overview
 
@@ -113,13 +113,26 @@ kubectl apply -f https://raw.githubusercontent.com/nginx/nginx-gateway-fabric/v2
 Verify installation:
 
 ```
-kubectl get pods -n nginx-gateway
+kubectl get all -n nginx-gateway
 kubectl get gatewayclass
 ```
 
 ```
-NAME                             READY   STATUS    RESTARTS        AGE
-nginx-gateway-86c78fbbcf-xkzp8   1/1     Running   2 (3m43s ago)   3m46s
+NAME                                       READY   STATUS    RESTARTS   AGE
+pod/nginx-gateway-86c78fbbcf-g6wd6         1/1     Running   0          4m35s
+pod/nginx-gateway-nginx-5c57ff7c5f-lvpww   1/1     Running   0          3m57s
+
+NAME                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/nginx-gateway         ClusterIP   10.105.29.36    <none>        443/TCP          4m35s
+service/nginx-gateway-nginx   NodePort    10.105.181.26   <none>        3000:31422/TCP   3m57s
+
+NAME                                  READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/nginx-gateway         1/1     1            1           4m35s
+deployment.apps/nginx-gateway-nginx   1/1     1            1           3m57s
+
+NAME                                             DESIRED   CURRENT   READY   AGE
+replicaset.apps/nginx-gateway-86c78fbbcf         1         1         1       4m35s
+replicaset.apps/nginx-gateway-nginx-5c57ff7c5f   1         1         1       3m57s
 
 NAME    CONTROLLER                                   ACCEPTED   AGE
 nginx   gateway.nginx.org/nginx-gateway-controller   True       3m46s
@@ -138,7 +151,7 @@ kubectl apply -f .
 ### Change the image of the deployment to initilize deployment strategy:
 
 ```
-kubectl set image -n recreate-ns deployment/online-shop-deploy online-shop-container=amitabhdevops/online_shop_without_footer
+kubectl set image -n recreate-ns deployment/online-shop-deploy online-shop-container=abhradippaul/deployment-strategies:v2
 ```
 
 ### Output
@@ -179,7 +192,7 @@ kubectl apply -f .
 ### Change the image of the deployment to initilize deployment strategy:
 
 ```
-kubectl set image -n rollingupdate-ns deployment/online-shop-deploy online-shop-container=amitabhdevops/online_shop_without_footer
+kubectl set image -n rollingupdate-ns deployment/online-shop-deploy online-shop-container=abhradippaul/deployment-strategies:v2
 ```
 
 ### Output
@@ -233,8 +246,45 @@ kubectl apply -f .
 Using this blue green deployment strategies we can distribute traffic using gateway api between old deployment and new deployment as needed.
 
 ```
+kubectl get all -n bluegreen-ns
+
+NAME                                            READY   STATUS    RESTARTS   AGE
+pod/online-shop-blue-deploy-77764f7bd7-hmbl2    1/1     Running   0          17s
+pod/online-shop-blue-deploy-77764f7bd7-lvtzt    1/1     Running   0          17s
+pod/online-shop-blue-deploy-77764f7bd7-nrwz7    1/1     Running   0          17s
+pod/online-shop-blue-deploy-77764f7bd7-ptj9h    1/1     Running   0          17s
+pod/online-shop-green-deploy-8458d567c8-jh6sj   1/1     Running   0          17s
+pod/online-shop-green-deploy-8458d567c8-zljp6   1/1     Running   0          17s
+
+NAME                            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/online-shop-blue-svc    ClusterIP   10.104.118.33   <none>        3000/TCP   17s
+service/online-shop-green-svc   ClusterIP   10.98.138.103   <none>        3000/TCP   17s
+
+NAME                                       READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/online-shop-blue-deploy    4/4     4            4           17s
+deployment.apps/online-shop-green-deploy   2/2     2            2           17s
+
+NAME                                                  DESIRED   CURRENT   READY   AGE
+replicaset.apps/online-shop-blue-deploy-77764f7bd7    4         4         4       17s
+replicaset.apps/online-shop-green-deploy-8458d567c8   2         2         2       17s
+
+kubectl get httproute -n bluegreen-ns
+
+NAME                  HOSTNAMES   AGE
+bluegreen-httproute               75s
+```
+
+### Access the website
 
 ```
+kubectl get svc -n nginx-gateway
+
+NAME                  TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+nginx-gateway         ClusterIP   10.105.29.36    <none>        443/TCP          5m56s
+nginx-gateway-nginx   NodePort    10.105.181.26   <none>        3000:31422/TCP   5m18s
+```
+
+Open browser and type http://NODE-IP:31422
 
 ## Canary Deployment Strategy
 
@@ -251,13 +301,29 @@ kubectl apply -f .
 Using this canary deployment strategies we can distribute traffic between old deployment and new deployment using deployment replicas.
 
 ```
-NAME                                    READY   STATUS    RESTARTS   AGE
-online-shop-v1-deploy-cb6db7766-28lfj   1/1     Running   0          29m
-online-shop-v1-deploy-cb6db7766-mqtk9   1/1     Running   0          29m
-online-shop-v2-deploy-5988f986d-9svn4   1/1     Running   0          26m
-online-shop-v2-deploy-5988f986d-bhq6g   1/1     Running   0          2m46s
-online-shop-v2-deploy-5988f986d-bwxgj   1/1     Running   0          29m
-online-shop-v2-deploy-5988f986d-jcrtw   1/1     Running   0          2m46s
+kubectl get all -n canary-ns
+
+NAME                                        READY   STATUS    RESTARTS   AGE
+pod/online-shop-v1-deploy-cb6db7766-pw2xk   1/1     Running   0          21s
+pod/online-shop-v1-deploy-cb6db7766-w9lj2   1/1     Running   0          21s
+pod/online-shop-v2-deploy-5988f986d-lc8kf   1/1     Running   0          21s
+pod/online-shop-v2-deploy-5988f986d-nrmsz   1/1     Running   0          21s
+
+NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/online-shop-svc   ClusterIP   10.108.111.62   <none>        3000/TCP   21s
+
+NAME                                    READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/online-shop-v1-deploy   2/2     2            2           21s
+deployment.apps/online-shop-v2-deploy   2/2     2            2           21s
+
+NAME                                              DESIRED   CURRENT   READY   AGE
+replicaset.apps/online-shop-v1-deploy-cb6db7766   2         2         2       21s
+replicaset.apps/online-shop-v2-deploy-5988f986d   2         2         2       21s
+
+kubectl get ingress -n canary-ns
+
+NAME                           CLASS   HOSTS   ADDRESS         PORTS   AGE
+canary-deployment-strategies   nginx   *       10.102.36.101   80      2m48s
 ```
 
 ### Access the website

@@ -2,14 +2,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: online-shop-green
-  name: online-shop-green-deploy
+    app: bluegreen-green
+  name: bluegreen-green-deploy
   namespace: bluegreen-ns
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: online-shop-green
+      app: bluegreen-green
   strategy:
     type: RollingUpdate
     rollingUpdate: 
@@ -18,13 +18,13 @@ spec:
   template:
     metadata:
       labels:
-        app: online-shop-green
+        app: bluegreen-green
     spec:
       containers:
-        - image: amitabhdevops/online_shop_without_footer
-          name: online-shop-container-green
+        - image: abhradippaul/deployment-strategies:v2
+          name: bluegreen-container-green
           ports:
-            - containerPort: 3000
+            - containerPort: 80
           resources:
             limits:
               cpu: 25m

@@ -7,7 +7,7 @@ spec:
   gatewayClassName: nginx
   listeners:
   - protocol: HTTP
-    port: 3000
+    port: 80
     name: http
     allowedRoutes:
       namespaces:

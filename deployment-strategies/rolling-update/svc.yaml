@@ -2,13 +2,13 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: online-shop
-  name: online-shop-svc
+    app: rollingupdate
+  name: rollingupdate-svc
   namespace: rollingupdate-ns
 spec:
   ports:
-    - port: 3000
+    - port: 80
       protocol: TCP
-      targetPort: 3000
+      targetPort: 80
   selector:
-    app: online-shop
+    app: rollingupdate

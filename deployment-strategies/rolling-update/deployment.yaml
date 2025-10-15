@@ -2,14 +2,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: online-shop
-  name: online-shop-deploy
+    app: rollingupdate
+  name: rollingupdate-deployment
   namespace: rollingupdate-ns
 spec:
   replicas: 5
   selector:
     matchLabels:
-      app: online-shop
+      app: rollingupdate
   strategy:
     type: RollingUpdate
     rollingUpdate: 
@@ -18,13 +18,13 @@ spec:
   template:
     metadata:
       labels:
-        app: online-shop
+        app: rollingupdate
     spec:
       containers:
-        - image: amitabhdevops/online_shop
-          name: online-shop-container
+        - image: abhradippaul/deployment-strategies:v1
+          name: rollingupdate-container
           ports:
-            - containerPort: 3000
+            - containerPort: 80
           resources:
             limits:
               cpu: 25m

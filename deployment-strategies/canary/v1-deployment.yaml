@@ -2,27 +2,27 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: online-shop
+    app: canary
     version: v1
-  name: online-shop-v1-deploy
+  name: canary-v1-deploy
   namespace: canary-ns
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: online-shop
+      app: canary
       version: v1
   template:
     metadata:
       labels:
-        app: online-shop
+        app: canary
         version: v1
     spec:
       containers:
-        - image: amitabhdevops/online_shop
+        - image: abhradippaul/deployment-strategies:v1
           name: online-shop-container
           ports:
-            - containerPort: 3000
+            - containerPort: 80
           resources:
             limits:
               cpu: 25m
