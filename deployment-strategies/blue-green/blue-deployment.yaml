@@ -24,7 +24,7 @@ spec:
         - image: abhradippaul/deployment-strategies:v1
           name: bluegreen-container-blue
           ports:
-            - containerPort: 3000
+            - containerPort: 80
           resources:
             limits:
               cpu: 25m

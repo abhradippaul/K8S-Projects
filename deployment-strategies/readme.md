@@ -84,14 +84,6 @@ ingress-nginx-controller-admission   ClusterIP   10.103.5.11     <none>        4
 
 Ingress controller setup is completed.
 
-For checking the downtime we will create a pod as request client and see the log.
-
-Create request client pod:
-
-```
-k apply -f client.yaml
-```
-
 ## Gateway API Setup
 
 ```
