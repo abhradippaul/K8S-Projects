@@ -23,7 +23,6 @@ helm repo add fluent https://fluent.github.io/helm-charts
 helm repo update
 ```
 
-
 ---
 
 ## 3️⃣ Install Elasticsearch
@@ -38,8 +37,8 @@ helm install elasticsearch elastic/elasticsearch
 -n log
 ```
 
-
 **Notes:**
+
 - Deploys a **single-node Elasticsearch** with persistent storage.
 - Service type is **LoadBalancer** for external access.
 
@@ -89,12 +88,14 @@ Fetch default configuration:
 ```
 helm show values fluent/fluent-bit > fluentbit-values.yaml
 ```
+
 ```
 Edit `fluentbit-values.yaml` to configure:
 - **Elasticsearch output** (host, username, password)
 - **Input sources** (tail logs, systemd, etc.)
 - **Parsers / Filters** for log formats
 ```
+
 ```
 vim fluentbit-values.yaml
 ```
@@ -109,7 +110,6 @@ helm install fluent-bit fluent/fluent-bit
 -n log
 ```
 
-
 **Check Deployment:**
 
 ```
@@ -117,9 +117,9 @@ kubectl get pods -n log -w
 kubectl get svc -n log
 helm list -n log
 ```
+
 <img width="1407" height="133" alt="Screenshot 2025-08-10 230529" src="https://github.com/user-attachments/assets/7d35d471-46f2-44ef-8654-39d5882796f2" />
 <img width="1290" height="494" alt="Screenshot 2025-08-10 230604" src="https://github.com/user-attachments/assets/aaba247c-8a16-41e5-a0fd-a1f8b1fb7a26" />
-
 
 ---
 
@@ -141,10 +141,37 @@ helm list -n log
 
 ✨ **You now have a working EFK stack deployed with Helm!**
 
-
-
-
-
-
 <img width="1917" height="912" alt="Screenshot 2025-08-10 232730" src="https://github.com/user-attachments/assets/94cbaf08-4a0c-4b75-ac91-26bceab51026" />
 <img width="951" height="993" alt="Screenshot 2025-08-10 230641" src="https://github.com/user-attachments/assets/3ad273fc-5f30-4252-a556-c0c130aba960" />
+
+### Install Java
+
+sudo apt update && sudo apt install openjdk 17-jre-headless -y
+
+### Install Elasticsearch
+
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list
+sudo apt update
+sudo apt install elastic-search -y
+
+### Configure Elasticsearch
+
+sudo vim /etc/elasticsearch/elasticsearch.yml
+Modify:
+network.host: 0.0.0.0
+cluster.name: my-cluster
+node.name: node 1
+discovery.type: single-node
+
+### Start and enable Elasticsearch
+
+sudo systemctl enable --now elasticsearch
+
+### Verify Elasticsearch
+
+curl -X GET "http://localhost:9200"
+
+## Install and configure logstash
+
+sudo apt install logstash -y

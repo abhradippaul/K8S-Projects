@@ -1,19 +1,20 @@
-# AKS Observability — Prometheus & Grafana (kube-prometheus-stack)
+# Monitoring — Prometheus & Grafana (kube-prometheus-stack)
 
-This guide provides step-by-step instructions for installing **Prometheus** and **Grafana** on an **Azure Kubernetes Service (AKS)** cluster using **Helm**.
-
-> **Note:** The commands below use `k` as an alias for `kubectl`. If you don't have this alias set, replace `k` with `kubectl`.
+This guide provides step-by-step instructions for installing **Prometheus** and **Grafana** on an **KUBEADMIN** cluster using **Helm**.
 
 ---
 
 ## 📋 Prerequisites
 
-- `kubectl` configured for your AKS cluster.
 - `helm` v3 or later installed locally.
-- Sufficient permissions to create namespaces, RBAC objects, and services.
-- Available Azure LoadBalancer public IP quota.
 
 ---
+
+### Helm Setup
+
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
 
 ## 🚀 Quick Start Commands
 
@@ -22,41 +23,55 @@ This guide provides step-by-step instructions for installing **Prometheus** and 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 ```
-<img width="772" height="151" alt="Screenshot 2025-08-10 225428" src="https://github.com/user-attachments/assets/b341a694-cfa9-4764-9db8-ab2ec9652e3b" />
 
+<img width="772" height="151" alt="Screenshot 2025-08-10 225428" src="https://github.com/user-attachments/assets/b341a694-cfa9-4764-9db8-ab2ec9652e3b" />
 
 ```bash
 # Create namespace for monitoring components
-k create ns monitoring
+kubectl create ns monitoring
 
 # Install kube-prometheus-stack (release name: prometheus)
-helm install prometheus prometheus-community/kube-prometheus-stack -n monitoring
+helm install prometheus prometheus-community/kube-prometheus-stack -n monitoring -f values.yaml
+
+# Install prometheus-blackbox-exporter (release name: blackbox-exporeter)
+helm upgrade --install blackbox-exporeter prometheus-community/prometheus-blackbox-exporter --set service.type=NodePort -n monitoring
 
 # List Helm releases
 helm list -n monitoring
 ```
-<img width="1491" height="91" alt="Screenshot 2025-08-10 225455" src="https://github.com/user-attachments/assets/878d6788-85d0-4f73-aaf4-5c9a36a8b7b7" />
 
+<img width="1491" height="91" alt="Screenshot 2025-08-10 225455" src="https://github.com/user-attachments/assets/878d6788-85d0-4f73-aaf4-5c9a36a8b7b7" />
 
 ```bash
 # Watch pods until they are running
-k get pods -n monitoring -w
+kubectl get pods -n monitoring -w
 
 # Check services
-k get svc -n monitoring
+kubectl get svc -n monitoring
 
-k get all -n monitoring
+kubectl get all -n monitoring
 ```
+
 <img width="1394" height="721" alt="Screenshot 2025-08-10 225944" src="https://github.com/user-attachments/assets/d0380d57-cea3-4a32-a396-a2f5b9075a67" />
 
+## Check the username and password for grafana login
 
 ```bash
-# Edit Grafana service to use LoadBalancer
-k edit svc -n monitoring prometheus-grafana
-# Change: spec.type: ClusterIP -> LoadBalancer
+# Check the admin-user and admin-password in this secret
+kubectl get secret -n monitoring prometheus-grafana -o yaml
+
+# Decode the username and password using base64
+echo "YWRtaW4=" | base64 -d
+echo "cHJvbS1vcGVyYXRvcg==" | base64 -d
+```
+
+```bash
+# Edit Grafana service to use LoadBalancer/NodePort
+kubectl edit svc -n monitoring prometheus-grafana
+# Change: spec.type: ClusterIP -> LoadBalancer/NodePort
 
 # Verify updated service
-k get svc -n monitoring
+kubectl get svc -n monitoring
 ```
 
 <img width="950" height="990" alt="Screenshot 2025-08-10 230130" src="https://github.com/user-attachments/assets/a0cabfee-d9cd-4588-9259-08fa416744e9" />
