@@ -3,14 +3,45 @@ kind: PrometheusRule
 metadata:
   labels:
     app: kube-prometheus-stack
-    app.kubernetes.io/instance: kube-prometheus-stack
-    release: kube-prometheus-stack
+    app.kubernetes.io/instance: prometheus
+    release: prometheus
   name: kube-pod-not-ready
   namespace: monitoring
 spec:
   groups:
   - name: my-pod-demo-rules
     rules:
+    - alert: KubePodImagePullBackOffError
+      annotations:
+        description: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container
+          }}) is in waiting state (reason: "ImagePullBackOff").'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodimagepullbackofferror
+        summary: Pod image not found.
+      expr: max_over_time(kube_pod_container_status_waiting_reason{reason="ImagePullBackOff",
+          job="kube-state-metrics", namespace=~".*"}[5m]) >= 1
+      for: 2m
+      labels:
+        everity: critical
+    - alert: KubePodCrashLooping
+      annotations:
+        description: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container
+          }}) is in waiting state (reason: "CrashLoopBackOff").'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodcrashlooping
+        summary: Pod is crash looping.
+      expr: max_over_time(kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff",
+        job="kube-state-metrics", namespace=~".*"}[5m]) >= 1
+      for: 2m
+      labels:
+        severity: warning
+    -   alert: TooManyContainerRestarts 
+        annotations: 
+          summary: Container named {{ $labels.container }} in {{ $labels.pod }} in {{ $labels.namespace }} was restarted 
+          description: "Namespace: {{$labels.namespace}}\nPod name: {{$labels.pod}}\nContainer name: {{$labels.container}}\n" 
+        expr: sum(increase(kube_pod_container_status_restarts_total{pod_template_hash=""}[15m])) by (pod,namespace,container) > 1 
+        for: 0m 
+        labels: 
+          severity: critical
+          app: "{{ $labels.pod }}"
     - alert: KubernetesPodNotHealthy
       expr: sum by (namespace, pod) (kube_pod_status_phase{phase=~"Pending|Unknown|Failed"}) > 0
       for: 1m
@@ -39,7 +70,7 @@ spec:
       expr: (sum(container_memory_working_set_bytes{name!=""}) BY (instance, name) / sum(container_spec_memory_limit_bytes > 0) BY (instance, name) * 100) > 80
       for: 2m
       labels:
-        severity: warning
+        severity: Clarivate
       annotations:
         summary: Container High Memory usage (instance {{ $labels.instance }})
         description: "Container Memory usage is above 80%\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
@@ -55,7 +86,7 @@ spec:
       expr: increase(kube_pod_container_status_restarts_total[1m]) > 3
       for: 2m
       labels:
-        severity: warning
+        severity: Clarivate
       annotations:
         summary: Kubernetes pod crash looping (instance {{ $labels.instance }})
         description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash looping\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"

@@ -76,3 +76,13 @@ kubectl get svc -n monitoring
 
 <img width="950" height="990" alt="Screenshot 2025-08-10 230130" src="https://github.com/user-attachments/assets/a0cabfee-d9cd-4588-9259-08fa416744e9" />
 <img width="942" height="986" alt="Screenshot 2025-08-10 225355" src="https://github.com/user-attachments/assets/55322bd6-9cec-4f59-83b8-6883c723a8d7" />
+
+### Creating custom alerts
+
+```bash
+# Goto the alert-rule folder
+cd alert-rule
+
+# Apply the customs alert rules
+kubectl apply -f .
+```
