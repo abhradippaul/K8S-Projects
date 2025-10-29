@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jiralert
+  namespace: monitoring
+spec:
+  selector:
+    app: jiralert
+  ports:
+  - port: 9097
+    targetPort: 9097

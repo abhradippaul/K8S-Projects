@@ -7,14 +7,9 @@ This guide provides step-by-step instructions for installing **Prometheus** and 
 ## 📋 Prerequisites
 
 - `helm` v3 or later installed locally.
+- `kubeadm` setup
 
 ---
-
-### Helm Setup
-
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-chmod 700 get_helm.sh
-./get_helm.sh
 
 ## 🚀 Quick Start Commands
 
@@ -31,14 +26,18 @@ helm repo update
 kubectl create ns monitoring
 
 # Install kube-prometheus-stack (release name: prometheus)
-helm install prometheus prometheus-community/kube-prometheus-stack -n monitoring -f values.yaml
+helm install prometheus prometheus-community/kube-prometheus-stack \
+-n monitoring -f values/prom-values.yaml
 
 # Install prometheus-blackbox-exporter (release name: blackbox-exporeter)
-helm upgrade --install blackbox-exporeter prometheus-community/prometheus-blackbox-exporter --set service.type=NodePort -n monitoring
+helm upgrade --install blackbox-exporeter prometheus-community/prometheus-blackbox-exporter \
+-n monitoring -f values/blackbox-exporter.yaml
 
 # List Helm releases
 helm list -n monitoring
 ```
+
+### Import 1860 for full node exporter dashboard
 
 <img width="1491" height="91" alt="Screenshot 2025-08-10 225455" src="https://github.com/user-attachments/assets/878d6788-85d0-4f73-aaf4-5c9a36a8b7b7" />
 
@@ -57,12 +56,11 @@ kubectl get all -n monitoring
 ## Check the username and password for grafana login
 
 ```bash
-# Check the admin-user and admin-password in this secret
-kubectl get secret -n monitoring prometheus-grafana -o yaml
+# Check the admin-password
+kubectl get secret -n monitoring prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 -d
 
-# Decode the username and password using base64
-echo "YWRtaW4=" | base64 -d
-echo "cHJvbS1vcGVyYXRvcg==" | base64 -d
+# Check the admin-user
+kubectl get secret -n monitoring prometheus-grafana -o jsonpath="{.data.admin-user}" | base64 -d
 ```
 
 ```bash
