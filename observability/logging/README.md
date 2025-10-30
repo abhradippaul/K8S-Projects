@@ -15,99 +15,44 @@ Before starting, ensure you have:
 
 ---
 
-## 1️⃣ Add Helm Repositories
+### 1️⃣ Add Helm Repositories for elasticsearch and kibana
 
-```
+```bash
+# Add this repo using helm and do update
 helm repo add elastic https://helm.elastic.co
-helm repo add fluent https://fluent.github.io/helm-charts
 helm repo update
 ```
 
 ---
 
-## 3️⃣ Install Elasticsearch
+### Setup ElasticSearch for Database
 
+```bash
+# Create ElasticSearch resource
+helm install elasticsearch elastic/elasticsearch \
+-n logging -f values/elasticsearch-values.yaml
+
+# Retrieve the username for the ElasticSearch
+kubectl get secrets -n logging elasticsearch-master-credentials -ojsonpath='{.data.username}' | base64 -d
+
+# Retrieve the password for the ElasticSearch
+kubectl get secrets -n logging elasticsearch-master-credentials -ojsonpath='{.data.password}' | base64 -d
 ```
-helm install elasticsearch elastic/elasticsearch
---set replicas=1
---set resources.requests.memory="512Mi"
---set resources.requests.cpu="500m"
---set persistence.enabled=true
---set service.type=LoadBalancer
--n log
-```
+
+These credentials are needed when configuring **Fluent Bit**.
 
 **Notes:**
 
 - Deploys a **single-node Elasticsearch** with persistent storage.
-- Service type is **LoadBalancer** for external access.
-
-**Check Deployment:**
-
-```
-kubectl get pods -n log -w
-kubectl get pv
-kubectl get pvc
-kubectl get svc -n log
-```
+- Service type is **NodePort** for external access.
 
 ---
 
 ## 4️⃣ Install Kibana
 
-```
-helm install kibana elastic/kibana
---set service.type=LoadBalancer
--n log
-```
-
-**Check Deployment:**
-
-```
-kubectl get pods -n log -w
-kubectl get svc -n log
-```
-
----
-
-## 5️⃣ Get Elasticsearch Credentials
-
-```
-kubectl get secrets -n log elasticsearch-master-credentials -ojsonpath='{.data.password}' | base64 -d
-kubectl get secrets -n log elasticsearch-master-credentials -ojsonpath='{.data.username}' | base64 -d
-```
-
-These credentials are needed when configuring **Fluent Bit**.
-
----
-
-## 6️⃣ Configure Fluent Bit
-
-Fetch default configuration:
-
-```
-helm show values fluent/fluent-bit > fluentbit-values.yaml
-```
-
-```
-Edit `fluentbit-values.yaml` to configure:
-- **Elasticsearch output** (host, username, password)
-- **Input sources** (tail logs, systemd, etc.)
-- **Parsers / Filters** for log formats
-```
-
-```
-vim fluentbit-values.yaml
-```
-
----
-
-## 7️⃣ Install Fluent Bit
-
-```
-helm install fluent-bit fluent/fluent-bit
--f fluentbit-values.yaml
--n log
+```bash
+helm install kibana elastic/kibana \
+-n logging -f values/kibana-values.yaml
 ```
 
 **Check Deployment:**
@@ -115,7 +60,24 @@ helm install fluent-bit fluent/fluent-bit
 ```
 kubectl get pods -n log -w
 kubectl get svc -n log
-helm list -n log
+```
+
+---
+
+### 1️⃣ Add Helm Repositories for elasticsearch and kibana
+
+```bash
+# Add this repo using helm and do update
+helm repo add fluent https://fluent.github.io/helm-charts
+helm repo update
+```
+
+### 6️⃣ Configure Fluent Bit
+
+```bash
+# Install fluent bit using helm
+helm install fluent-bit fluent/fluent-bit \
+-f values/fluentbit-values.yaml -n logging
 ```
 
 <img width="1407" height="133" alt="Screenshot 2025-08-10 230529" src="https://github.com/user-attachments/assets/7d35d471-46f2-44ef-8654-39d5882796f2" />
@@ -123,55 +85,7 @@ helm list -n log
 
 ---
 
-## 🛠 Troubleshooting Tips
-
-- Ensure all pods are in **Running** state.
-- If pods are stuck in `Pending`, check for resource quota or storage issues.
-- Debug using `kubectl logs <pod-name> -n log`.
-- Access Kibana using the LoadBalancer IP to visualize logs.
-
----
-
-## 📚 References
-
-- [Elastic Helm Charts Documentation](https://github.com/elastic/helm-charts)
-- [Fluent Bit Helm Chart Documentation](https://github.com/fluent/helm-charts)
-
----
-
 ✨ **You now have a working EFK stack deployed with Helm!**
 
 <img width="1917" height="912" alt="Screenshot 2025-08-10 232730" src="https://github.com/user-attachments/assets/94cbaf08-4a0c-4b75-ac91-26bceab51026" />
 <img width="951" height="993" alt="Screenshot 2025-08-10 230641" src="https://github.com/user-attachments/assets/3ad273fc-5f30-4252-a556-c0c130aba960" />
-
-### Install Java
-
-sudo apt update && sudo apt install openjdk 17-jre-headless -y
-
-### Install Elasticsearch
-
-wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
-echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list
-sudo apt update
-sudo apt install elastic-search -y
-
-### Configure Elasticsearch
-
-sudo vim /etc/elasticsearch/elasticsearch.yml
-Modify:
-network.host: 0.0.0.0
-cluster.name: my-cluster
-node.name: node 1
-discovery.type: single-node
-
-### Start and enable Elasticsearch
-
-sudo systemctl enable --now elasticsearch
-
-### Verify Elasticsearch
-
-curl -X GET "http://localhost:9200"
-
-## Install and configure logstash
-
-sudo apt install logstash -y

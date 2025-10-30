@@ -1,0 +1,46 @@
+storage:
+  type: elasticsearch
+  elasticsearch:
+    scheme: https
+    host: elasticsearch-master
+    port: 9200
+    user: elastic
+    password: abhradip
+    tls:
+      enabled: true
+      ca: /tls/ca-cert.pem
+
+provisionDataStore:
+  cassandra: false
+  elasticsearch: false
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200Mi
+  requests:
+    cpu: 100m
+    memory: 200Mi
+
+query:
+  service:
+    type: NodePort
+    nodePort: 32001
+  cmdlineParams:
+    es.tls.ca: "/tls/ca-cert.pem"
+  extraConfigmapMounts:
+    - name: jaeger-tls
+      mountPath: /tls
+      subPath: ""
+      configMap: jaeger-tls
+      readOnly: true
+
+collector:
+  cmdlineParams:
+    es.tls.ca: "/tls/ca-cert.pem"
+  extraConfigmapMounts:
+    - name: jaeger-tls
+      mountPath: /tls
+      subPath: ""
+      configMap: jaeger-tls
+      readOnly: true
