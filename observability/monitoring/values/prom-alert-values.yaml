@@ -1,0 +1,58 @@
+grafana:
+  assertNoLeakedSecrets: false
+  grafana.ini:
+    smtp:
+      enabled: true
+      host: smtp.gmail.com:587
+      user: '@gmail.com'
+      from_address: '@gmail.com'
+      password: ''
+      skip_verify: true
+      from_name: Grafana
+  service:
+    type: NodePort
+    nodePort: 32000
+  adminUser: abhra
+  adminPassword: abhradip
+
+prometheus:
+  service:
+    type: NodePort
+    nodePort: 32001
+
+alertmanager:
+  config:
+      global:
+        resolve_timeout: 5m
+      route:
+        group_by: ['alertname']
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 12h
+        receiver: default
+
+        routes:
+        - receiver: gmail
+          matchers:
+            - alertname = "KubePodImagePullBackOffError"
+
+      receivers:
+      - name: default
+      - name: gmail
+        email_configs:
+        - to: '@gmail.com'
+          from: '@gmail.com'
+          smarthost: smtp.gmail.com:587
+          auth_username: '@gmail.com'
+          auth_identity: '@gmail.com'
+          auth_password: ''
+          send_resolved: true
+          headers :
+            Subject: 'Highly urgent .. .Please look ASAP !! '
+          text: '{ { . CommonAnnotations. summary } } '
+      templates:
+      - '/etc/alertmanager/config/*.tmpl'
+  service:
+    type: NodePort
+    nodePort: 32002
+  

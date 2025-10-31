@@ -16,4 +16,4 @@ serviceMonitor:
     enabled: true
 
 commonLabels:
-  release: grafana
+  release: prometheus

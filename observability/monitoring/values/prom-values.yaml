@@ -4,13 +4,6 @@ grafana:
     nodePort: 32000
   adminUser: abhra
   adminPassword: abhradip
-  sidecar:
-    datasources:
-      defaultDatasourceEnabled: true
-  additionalDataSources: 
-  - name: loki
-    type: loki
-    url: http://loki-loki-distributed-query-frontend.monitoring:3100
 
 prometheus:
   service:

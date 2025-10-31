@@ -1,6 +1,6 @@
-# Monitoring — Prometheus & Grafana (kube-prometheus-stack)
+# Monitoring — (kube-prometheus-stack)
 
-This guide provides step-by-step instructions for installing **Prometheus** and **Grafana** on an **KUBEADMIN** cluster using **Helm**.
+This guide provides step-by-step instructions for installing **Prometheus**, **Grafana**, **Prometheus Mongodb Exporter** and **Prometheus Blackbox Exporter** on an **KUBEADMIN** cluster using **Helm**.
 
 ---
 
@@ -11,49 +11,51 @@ This guide provides step-by-step instructions for installing **Prometheus** and 
 
 ---
 
-## 🚀 Quick Start Commands
+## Components needed
+
+- Prometheus
+- Grafana
+- Prometheus Mongodb Exporter
+- Prometheus Blackbox Exporter
+
+Node Exporter + Kube State Metrics -> Prometheus -> Grafana
+
+```bash
+# Goto the monitoring folder
+cd monitoring
+```
+
+## Add Helm repo
+
+Using helm repo setup Prometheus, Grafana, Prometheus Mongodb Exporter, Prometheus Blackbox Exporter
 
 ```bash
 # Add Prometheus Helm repo and update
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add prom https://prometheus-community.github.io/helm-charts
 helm repo update
 ```
 
-<img width="772" height="151" alt="Screenshot 2025-08-10 225428" src="https://github.com/user-attachments/assets/b341a694-cfa9-4764-9db8-ab2ec9652e3b" />
+### Namespace monitoring
 
 ```bash
-# Create namespace for monitoring components
+# Create namespace for deploy monitoring resources
 kubectl create ns monitoring
+```
 
+## Grafana, Prometheus and Alert Manager
+
+Setup as **Deployment** for monitoring and scrape metrics
+
+```bash
 # Install kube-prometheus-stack (release name: prometheus)
-helm install prometheus prometheus-community/kube-prometheus-stack \
+helm upgrade --install prometheus prom/kube-prometheus-stack \
 -n monitoring -f values/prom-values.yaml
-
-# Install prometheus-blackbox-exporter (release name: blackbox-exporeter)
-helm upgrade --install blackbox-exporeter prometheus-community/prometheus-blackbox-exporter \
--n monitoring -f values/blackbox-exporter.yaml
 
 # List Helm releases
 helm list -n monitoring
 ```
 
-### Import 1860 for full node exporter dashboard
-
-<img width="1491" height="91" alt="Screenshot 2025-08-10 225455" src="https://github.com/user-attachments/assets/878d6788-85d0-4f73-aaf4-5c9a36a8b7b7" />
-
-```bash
-# Watch pods until they are running
-kubectl get pods -n monitoring -w
-
-# Check services
-kubectl get svc -n monitoring
-
-kubectl get all -n monitoring
-```
-
-<img width="1394" height="721" alt="Screenshot 2025-08-10 225944" src="https://github.com/user-attachments/assets/d0380d57-cea3-4a32-a396-a2f5b9075a67" />
-
-## Check the username and password for grafana login
+Get username and password of Grafana
 
 ```bash
 # Check the admin-password
@@ -63,45 +65,78 @@ kubectl get secret -n monitoring prometheus-grafana -o jsonpath="{.data.admin-pa
 kubectl get secret -n monitoring prometheus-grafana -o jsonpath="{.data.admin-user}" | base64 -d
 ```
 
-```bash
-# Edit Grafana service to use LoadBalancer/NodePort
-kubectl edit svc -n monitoring prometheus-grafana
-# Change: spec.type: ClusterIP -> LoadBalancer/NodePort
+Import **1860** dashboard to visualize node metrics
 
-# Verify updated service
-kubectl get svc -n monitoring
+Import **15661** dashboard to visualize kubernetes cluster
+
+## Alerts
+
+### Upgrade Helm Chart
+
+For setup alert we need to upgrade the helm release with new configuration
+
+```bash
+# Upgrade the helm release
+helm upgrade --install prometheus prom/kube-prometheus-stack \
+-n monitoring -f values/prom-alert-values.yaml
 ```
 
-<img width="950" height="990" alt="Screenshot 2025-08-10 230130" src="https://github.com/user-attachments/assets/a0cabfee-d9cd-4588-9259-08fa416744e9" />
-<img width="942" height="986" alt="Screenshot 2025-08-10 225355" src="https://github.com/user-attachments/assets/55322bd6-9cec-4f59-83b8-6883c723a8d7" />
+### Grafana Based Alerts
 
-### Creating custom alerts
+In Grafana dashboard
+
+- Create alert using PromQL Query with label
+- Create contact point
+- Create notification policy
+
+PromQL Query:-
+
+- kube_pod_container_status_waiting_reason{namespace="default", reason="ImagePullBackOff"}
+- kube_pod_container_status_restarts_total{namespace="default"}
+
+### Alert Manager Based Alerts
+
+The Alert Manager already configured by the prom-alert-values.
+We need to configure the prometheus rule to create custom rule
 
 ```bash
-# Goto the alert-rule folder
-cd alert-rule
-
-# Apply the customs alert rules
-kubectl apply -f .
+# Apply the custom prometheus rule
+kubectl apply -f custom-alert-rules.yaml
 ```
 
-## Setup Loki for log aggregation and visualization
+## Setup Monitoring MongoDB
 
-### Install Promtail which exports log from every node
+### Create mongodb pod
 
 ```bash
-# Add this repo using helm and do update
-helm repo add grafana https://grafana.github.io/helm-charts
-helm repo update
-
-# Create promtail resource using helm
-helm install promtail grafana/promtail \
--n monitoring -f loki/promtail-config.yaml
+# Apply the command to create mongodb pod
+kubectl apply -f mongodb-database.yaml
 ```
 
-### Install Loki which will collect log from Promtail
+## Prometheus Mongodb Exporter
+
+Setup as **Deployment** for exporting metrics of mongodb pods
 
 ```bash
-# Create loki resource using helm
-helm install loki grafana/loki-distributed -n monitoring
+# Install prometheus-mongodb-exporter (release name: mongodb-exporter)
+helm upgrade --install mongodb-exporter prom/prometheus-mongodb-exporter \
+-n monitoring -f values/mongodb-exporter-values.yaml
+```
+
+Check on the prometheus if the target is coming or not
+After that check on grafana explore section
+
+Import **20867** dashboard to visualize mongodb
+
+### Blackbox Exporter
+
+Setup as **Deployment** to monitor HTTP or HTTPS endpoint
+
+```bash
+# Install prometheus-blackbox-exporter (release name: blackbox-exporter)
+helm upgrade --install blackbox-exporter prom/prometheus-blackbox-exporter \
+-n monitoring -f values/blackbox-exporter-values.yaml
+
+# List Helm releases
+helm list -n monitoring
 ```

@@ -375,7 +375,29 @@ networkPolicy:
 #     from: []
 
 # See Lua script configuration example in README.md
-luaScripts: {}
+luaScripts: 
+  setIndex.lua: |
+    function set_index(tag, timestamp, record)
+        index = "abhra-"
+        if record["kubernetes"] ~= nil then
+            if record["kubernetes"]["namespace_name"] == "logging" then
+                return -1, timestamp, record  -- Skip logs from the logging namespace
+            end
+            if record["kubernetes"]["namespace_name"] ~= nil then
+                if record["kubernetes"]["container_name"] ~= nil then
+                    record["es_index"] = index
+                        .. record["kubernetes"]["namespace_name"]
+                        .. "-"
+                        .. record["kubernetes"]["container_name"]
+                    return 1, timestamp, record
+                end
+                record["es_index"] = index
+                    .. record["kubernetes"]["namespace_name"]
+                return 1, timestamp, record
+            end
+        end
+        return 1, timestamp, record
+    end
 ## https://docs.fluentbit.io/manual/administration/configuring-fluent-bit/classic-mode/configuration-file
 config:
   service: |
@@ -416,6 +438,12 @@ config:
         K8S-Logging.Parser On
         K8S-Logging.Exclude On
 
+    [FILTER]
+        Name lua
+        Match kube.*
+        script /fluent-bit/scripts/setIndex.lua
+        call set_index
+
   ## https://docs.fluentbit.io/manual/pipeline/outputs
   outputs: |
     [OUTPUT]
@@ -431,7 +459,6 @@ config:
         tls.verify Off
         Logstash_Prefix logstash
         Suppress_Type_Name On
-        Index           fluentbit-logs
         Type            _doc
 
     [OUTPUT]
@@ -447,7 +474,6 @@ config:
         tls On
         tls.verify Off
         Suppress_Type_Name On
-        Index           fluentbit-logs
         Type            _doc
 
   ## https://docs.fluentbit.io/manual/administration/configuring-fluent-bit/classic-mode/upstream-servers

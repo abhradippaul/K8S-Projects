@@ -55,15 +55,6 @@ helm install kibana elastic/kibana \
 -n logging -f values/kibana-values.yaml
 ```
 
-**Check Deployment:**
-
-```
-kubectl get pods -n log -w
-kubectl get svc -n log
-```
-
----
-
 ### 1️⃣ Add Helm Repositories for elasticsearch and kibana
 
 ```bash
