@@ -8,9 +8,6 @@ config:
         follow_redirects: true
         preferred_ip_protocol: "ip4"
 
-service:
-  type: NodePort
-
 serviceMonitor:
   selfMonitor:
     enabled: true

@@ -130,6 +130,14 @@ Import **20867** dashboard to visualize mongodb
 
 ### Blackbox Exporter
 
+For monitor HTTP and HTTPS endpoints we need to upgrade the helm release with new configuration
+
+```bash
+# Upgrade the helm release
+helm upgrade --install prometheus prom/kube-prometheus-stack \
+-n monitoring -f values/prom-blackbox-values.yaml
+```
+
 Setup as **Deployment** to monitor HTTP or HTTPS endpoint
 
 ```bash
@@ -140,3 +148,5 @@ helm upgrade --install blackbox-exporter prom/prometheus-blackbox-exporter \
 # List Helm releases
 helm list -n monitoring
 ```
+
+Import **7587** dashboard to visualize Prometheus Blackbox Exporter metrics

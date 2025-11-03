@@ -14,4 +14,3 @@ alertmanager:
   service:
     type: NodePort
     nodePort: 32002
-  
