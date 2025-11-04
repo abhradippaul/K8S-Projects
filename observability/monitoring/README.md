@@ -20,6 +20,8 @@ This guide provides step-by-step instructions for installing **Prometheus**, **G
 
 Node Exporter + Kube State Metrics -> Prometheus -> Grafana
 
+<img width="1716" height="993" alt="diagram-export-3-11-2025-1_34_58-pm" src="https://github.com/user-attachments/assets/c088d02d-c774-4fca-8663-cb41f805823b" />
+
 ```bash
 # Goto the monitoring folder
 cd monitoring
