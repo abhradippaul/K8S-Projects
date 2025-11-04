@@ -1,13 +1,13 @@
 # Monitoring — (kube-prometheus-stack)
 
-This guide provides step-by-step instructions for installing **Prometheus**, **Grafana**, **Prometheus Mongodb Exporter** and **Prometheus Blackbox Exporter** on an **KUBEADMIN** cluster using **Helm**.
+This guide provides step-by-step instructions for installing **Prometheus**, **Grafana**, **Prometheus Mongodb Exporter** and **Prometheus Blackbox Exporter** on an Kubernetes cluster using **Helm**.
 
 ---
 
 ## 📋 Prerequisites
 
 - `helm` v3 or later installed locally.
-- `kubeadm` setup
+- `Kubernetes` setup
 
 ---
 

@@ -13,6 +13,11 @@ logstashPipeline:
         port => 5044
       }
     }
+    filter {
+      if "CrashLoopBackOff" in [message] {
+          mutate { add_tag => "abhradip" }
+        }
+      }
     output {
       elasticsearch {
         hosts => "https://elasticsearch-master:9200"
@@ -23,6 +28,24 @@ logstashPipeline:
         manage_template => false
         index => "%{[@metadata][beat]}-%{+YYYY.MM.dd}"
         document_type => "%{[@metadata][type]}"
+      }
+      if "abhradip" in [tags] {
+        stdout { }
+
+        email {
+          to => "@gmail.com"
+          username => "@gmail.com"
+          from => "@gmail.com"
+          password => "1234"
+          subject => "Alert - CrashLoopBackOff detected"
+          body => "Tags: %{tags}\nContent:\n%{message}"
+          # template_file => "/tmp/email_template.mustache"
+          address => "smtp.gmail.com"
+          via => "smtp"
+          use_tls => true
+          authentication => "plain"
+          port => 587
+        }
       }
     }
 

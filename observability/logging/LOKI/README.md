@@ -1,26 +1,58 @@
-## Setup Loki for log aggregation and visualization
+# 🚀 Setup Loki with Helm
 
-### Install Promtail which exports log from every node
+## Components needed
+
+- Grafana
+- Loki
+- Promtail
+
+## Helm Repositories
+
+Add Helm Repositories for Grafana, Loki, Promtail
 
 ```bash
 # Add this repo using helm and do update
-helm repo add grafana https://grafana.github.io/helm-charts
+helm repo add loki https://grafana.github.io/helm-charts
+helm repo add prom https://prometheus-community.github.io/helm-charts
 helm repo update
-
-# Create promtail resource using helm
-helm install promtail grafana/promtail \
--n monitoring -f loki/promtail-config.yaml
 ```
 
-### Install Loki which will collect log from Promtail
+### Namespace monitoring, logging
+
+```bash
+# Create the namespace
+kubectl create ns monitoring
+kubectl create ns logging
+```
+
+## Promtail
+
+Setup Promtail as **DaemonSet** for exporting log from every node
+
+```bash
+# Create promtail resource using helm
+helm upgrade --install promtail grafana/promtail \
+-n logging -f values/promtail-values.yaml
+```
+
+## Loki
+
+Install Loki as **Deployment** which will collect log from Promtail
 
 ```bash
 # Create loki resource using helm
-helm install loki grafana/loki-distributed -n monitoring
+helm upgrade --install loki loki/loki -n logging \
+-f values/loki-values.yaml
 ```
 
+## Grafana
+
+Install Grafana as **Deployment** to visualize the logs
+
 ```bash
-# Install prometheus-blackbox-exporter (release name: blackbox-exporeter)
-helm upgrade --install blackbox-exporeter prometheus-community/prometheus-blackbox-exporter \
--n monitoring -f values/blackbox-exporter.yaml
+# Install kube-prometheus-stack (release name: grafana)
+helm upgrade --install grafana prom/kube-prometheus-stack \
+-n monitoring -f values/grafana-values.yaml
 ```
+
+Check logs in grafana

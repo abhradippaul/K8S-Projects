@@ -1,0 +1,92 @@
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log-generator
+  template:
+    metadata:
+      labels:
+        app: log-generator
+    spec:
+      volumes:
+      - name: shared-volume
+        emptyDir: {}
+      containers:
+      - name: log-generator
+        image: mingrammer/flog:0.4.3
+        args:
+        - --loop
+        - --format=json
+        - --number=10  # number of log lines per second
+        - --delay=100ms
+        - --output=/var/log/generated-logs.txt
+        - --overwrite
+        - --type=log
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /var/log
+      - name: busybox
+        image: busybox
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Waiting for log file..."; 
+          while [ ! -f /var/log/generated-logs.txt ]; do sleep 1; done;
+          tail -F /var/log/generated-logs.txt
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /var/log
+      - name: metrics-exporter
+        image: rslim087/metrics-exporter:latest
+        ports:
+        - containerPort: 8082
+          name: metrics
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /var/log
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics-exporter
+  labels:
+    app: metrics-exporter
+spec:
+  ports:
+  - port: 8082
+    targetPort: 8082
+    name: metrics
+  selector:
+    app: log-generator
+
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: metrics-exporter
+    release: grafana
+  name: metrics-exporter
+  namespace: monitoring
+spec:
+  jobLabel: job
+  endpoints:
+    - interval: 15s
+      port: metrics
+  selector:
+    matchLabels:
+      app: metrics-exporter
+  namespaceSelector:
+    matchNames:
+      - default
+
+---

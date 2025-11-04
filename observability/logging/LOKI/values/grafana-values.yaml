@@ -1,0 +1,32 @@
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector: {}
+    serviceMonitorNamespaceSelector: {}
+
+grafana:
+  adminUser: abhra
+  adminPassword: abhradip
+  service:
+    type: NodePort
+    nodePort: 32000
+  sidecar:
+    datasources:
+      defaultDatasourceEnabled: true
+  additionalDataSources: 
+  - name: loki
+    type: loki
+    url: http://loki-gateway.logging
+    access: proxy
+    jsonData:
+      httpHeaderName1: "X-Scope-OrgID"
+    secureJsonData:
+      httpHeaderValue1: "fake"
+
+prometheus:
+  service:
+    type: NodePort
+    nodePort: 32001
+
+alertmanager:
+  enabled: false
