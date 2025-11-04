@@ -75,5 +75,3 @@ helm upgrade --install filebeat elastic/filebeat \
 ```
 
 Verify the setup to view the kibana dashboard on port 32000
-
-## Without Logstash

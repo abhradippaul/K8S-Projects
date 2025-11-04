@@ -36,7 +36,7 @@ logstashPipeline:
           to => "@gmail.com"
           username => "@gmail.com"
           from => "@gmail.com"
-          password => "1234"
+          password => ""
           subject => "Alert - CrashLoopBackOff detected"
           body => "Tags: %{tags}\nContent:\n%{message}"
           # template_file => "/tmp/email_template.mustache"

@@ -18,7 +18,7 @@ spec:
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodimagepullbackofferror
         summary: Pod image not found.
       expr: max_over_time(kube_pod_container_status_waiting_reason{reason="ImagePullBackOff",
-          job="kube-state-metrics", namespace=~".*"}[5m]) >= 1
+          job="kube-state-metrics", namespace=~".*"}[1m]) >= 1
       for: 2m
       labels:
         everity: critical

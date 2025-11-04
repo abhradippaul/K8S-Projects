@@ -17,12 +17,12 @@ helm repo add prom https://prometheus-community.github.io/helm-charts
 helm repo update
 ```
 
-### Namespace monitoring, logging
+### Namespace logging, monitoring
 
 ```bash
 # Create the namespace
-kubectl create ns monitoring
 kubectl create ns logging
+kubectl create ns monitoring
 ```
 
 ## Promtail
@@ -31,7 +31,7 @@ Setup Promtail as **DaemonSet** for exporting log from every node
 
 ```bash
 # Create promtail resource using helm
-helm upgrade --install promtail grafana/promtail \
+helm upgrade --install promtail loki/promtail \
 -n logging -f values/promtail-values.yaml
 ```
 

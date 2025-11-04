@@ -3,6 +3,12 @@
 This repository provides a **step-by-step guide** to deploy the **EFK Stack** — Elasticsearch, Fluent Bit, and Kibana — in a Kubernetes cluster using [Helm](https://helm.sh).  
 The instructions cover repository setup, namespace creation, chart installation, configuration, and validation commands.
 
+## Components needed
+
+- Elasticsearch
+- Kibana
+- Fluent Bit
+
 ## Helm Repositories
 
 Add Helm Repositories for elasticsearch, kibana and Fluent Bit
@@ -61,4 +67,13 @@ Setup FluentBit as **DaemonSet** for exporting log from every nodes
 # Install fluent bit using helm
 helm upgrade --install fluent-bit fluent/fluent-bit \
 -f values/fluentbit-values.yaml -n logging
+```
+
+### Fake Logger
+
+Deploye a fake logging application to utilize logging
+
+```bash
+# Apply this deployment
+kubectl apply -f fake-metrics-logs.yaml
 ```

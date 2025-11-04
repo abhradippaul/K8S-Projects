@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log-generator
+  template:
+    metadata:
+      labels:
+        app: log-generator
+    spec:
+      volumes:
+      - name: shared-volume
+        emptyDir: {}
+      containers:
+      - name: log-generator
+        image: mingrammer/flog:0.4.3
+        args:
+        - --loop
+        - --format=json
+        - --number=10
+        - --delay=100ms
+        - --output=/var/log/generated-logs.txt
+        - --overwrite
+        - --type=log
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /var/log
+      - name: busybox
+        image: busybox
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Waiting for log file..."; 
+          while [ ! -f /var/log/generated-logs.txt ]; do sleep 1; done;
+          tail -F /var/log/generated-logs.txt
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /var/log
