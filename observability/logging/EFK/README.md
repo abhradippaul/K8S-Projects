@@ -3,6 +3,8 @@
 This repository provides a **step-by-step guide** to deploy the **EFK Stack** — Elasticsearch, Fluent Bit, and Kibana — in a Kubernetes cluster using [Helm](https://helm.sh).  
 The instructions cover repository setup, namespace creation, chart installation, configuration, and validation commands.
 
+<img width="1576" height="929" alt="diagram-export-5-11-2025-12_02_48-pm" src="https://github.com/user-attachments/assets/f35189c5-1708-4e5d-86ad-4c51576fe335" />
+
 ## Components needed
 
 - Elasticsearch
