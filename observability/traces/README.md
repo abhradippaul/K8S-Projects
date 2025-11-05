@@ -1,5 +1,19 @@
 # Setup Tracing in Kubernetes
 
+## 📋 Prerequisites
+
+- `helm` v3 or later installed locally.
+- `Kubernetes` setup
+
+---
+
+## Components needed
+
+- Prometheus
+- Grafana
+- Prometheus Mongodb Exporter
+- Prometheus Blackbox Exporter
+
 ## Install Jaegar to instrumate traces
 
 ```bash

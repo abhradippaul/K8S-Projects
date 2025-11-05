@@ -27,6 +27,13 @@ kubectl create ns logging
 kubectl create ns monitoring
 ```
 
+### Folder LOKI
+
+```bash
+# Goto the folder
+cd LOKI
+```
+
 ## Promtail
 
 Setup Promtail as **DaemonSet** for exporting log from every node
@@ -39,7 +46,7 @@ helm upgrade --install promtail loki/promtail \
 
 ## Loki
 
-Install Loki as **Deployment** which will collect log from Promtail
+Install Loki as **StatefulSet** which will collect log from Promtail
 
 ```bash
 # Create loki resource using helm
@@ -58,3 +65,16 @@ helm upgrade --install grafana prom/kube-prometheus-stack \
 ```
 
 Check logs in grafana
+
+## Log Generator
+
+Install a log generator application as **Deployment**
+
+```bash
+# Apply the resource
+kubectl apply -f fake-metrics-logs.yaml
+```
+
+### Check the metrics
+
+- sum by (method) (rate(http_requests_total[5m]))

@@ -6,6 +6,7 @@ import { doSomeHeavyTask } from "./utils/heavy-task.js";
 import { collectDefaultMetrics } from "./utils/prom.js";
 import responseTime from "response-time";
 import client from "prom-client";
+import { rollTheDice } from "./utils/rolldice.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -91,6 +92,16 @@ app.get("/slow", async (req, res) => {
       })
       .inc();
   }
+});
+
+app.get("/rolldice", (req, res) => {
+  const rolls = req.query?.rolls ? parseInt(req.query.rolls.toString()) : NaN;
+  if (isNaN(rolls)) {
+    return res
+      .status(400)
+      .send("Request parameter 'rolls' is missing or not a number.");
+  }
+  res.send(JSON.stringify(rollTheDice(rolls, 1, 6)));
 });
 
 app.listen(PORT, () => {
