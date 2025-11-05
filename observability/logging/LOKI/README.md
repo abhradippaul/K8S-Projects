@@ -1,5 +1,7 @@
 # 🚀 Setup Loki with Helm
 
+<img width="1576" height="927" alt="diagram-export-5-11-2025-12_23_07-pm" src="https://github.com/user-attachments/assets/77798594-08a4-4e2b-ab50-b4d987f66964" />
+
 ## Components needed
 
 - Grafana
@@ -8,7 +10,7 @@
 
 ## Helm Repositories
 
-Add Helm Repositories for Grafana, Loki, Promtail
+Add Helm Repositories for Grafana, Loki, and Promtail
 
 ```bash
 # Add this repo using helm and do update
