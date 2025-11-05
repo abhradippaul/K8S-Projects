@@ -3,6 +3,8 @@
 This repository provides a **step-by-step guide** to deploy the **ELK Stack** — Elasticsearch, Logstash, and Kibana — in a Kubernetes cluster using [Helm](https://helm.sh).  
 The instructions cover repository setup, namespace creation, chart installation, configuration, and validation commands.
 
+<img width="1576" height="929" alt="diagram-export-5-11-2025-12_19_14-pm" src="https://github.com/user-attachments/assets/81f43be6-f120-4b90-b88c-bb89b8bde47e" />
+
 ## Components needed
 
 - ElasticSearch
