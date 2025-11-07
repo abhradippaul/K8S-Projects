@@ -1,5 +1,7 @@
 # Setup Tracing with Jaeger in Kubernetes
 
+<img width="1576" height="878" alt="diagram-export-7-11-2025-12_38_46-pm" src="https://github.com/user-attachments/assets/ea101c8a-3837-4a4e-a2fe-8c9b66ad0ee9" />
+
 ## 📋 Prerequisites
 
 - `helm` v3 or later installed locally.
