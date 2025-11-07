@@ -1,5 +1,7 @@
 # Setup Tracing in Kubernetes
 
+<img width="1576" height="891" alt="diagram-export-7-11-2025-12_38_28-pm" src="https://github.com/user-attachments/assets/4c532a22-c61d-4475-9cc6-df1ba429f78b" />
+
 ## 📋 Prerequisites
 
 - `helm` v3 or later installed locally.
