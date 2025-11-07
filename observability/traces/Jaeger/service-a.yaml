@@ -1,3 +1,5 @@
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,3 +26,25 @@ spec:
               value: "http://jaeger-collector.traces:14268/api/traces"
             - name: SERVICE_B_URI
               value: "http://b-service"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    job: node-api
+    app: a-service
+  name: a-service
+spec:
+  ports:
+    - name: a-service-port
+      port: 80
+      protocol: TCP
+      targetPort: 3001
+      nodePort: 32001
+  selector:
+    app: service-a-deployment
+  type: NodePort
+
+---

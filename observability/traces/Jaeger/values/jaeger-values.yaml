@@ -14,18 +14,10 @@ provisionDataStore:
   cassandra: false
   elasticsearch: false
 
-resources:
-  limits:
-    cpu: 100m
-    memory: 200Mi
-  requests:
-    cpu: 100m
-    memory: 200Mi
-
 query:
   service:
     type: NodePort
-    nodePort: 32001
+    nodePort: 32000
   cmdlineParams:
     es.tls.ca: "/tls/ca-cert.pem"
   extraConfigmapMounts:

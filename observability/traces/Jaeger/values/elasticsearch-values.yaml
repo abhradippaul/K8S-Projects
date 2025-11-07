@@ -1,0 +1,8 @@
+replicas: 1
+minimumMasterNodes: 1
+
+persistence:
+  enabled: false
+
+secret:
+  password: "abhradip"

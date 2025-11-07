@@ -1,3 +1,5 @@
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,11 +17,35 @@ spec:
         app: service-b-deployment
     spec:
       containers:
-        - image: abhishekf5/demoservice-a:v
+        - image: abhradippaul/nodejs-tracing:service-b
           name: service-b
-          imagePullPolicy: Always
           ports:
             - containerPort: 3002
           env:
             - name: OTEL_EXPORTER_JAEGER_ENDPOINT
               value: "http://jaeger-collector.traces:14268/api/traces"
+
+            - name: SERVICE_A_URI
+              value: "http://a-service"  
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    job: node-api
+    app: b-service
+  name: b-service
+spec:
+  ports:
+    - name: b-service-port
+      port: 80
+      protocol: TCP
+      targetPort: 3001
+      nodePort: 32002
+  selector:
+    app: service-b-deployment
+  type: NodePort
+
+---

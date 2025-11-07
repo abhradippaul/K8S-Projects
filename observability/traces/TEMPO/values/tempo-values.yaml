@@ -11,13 +11,4 @@ tempo:
       local:
         path: /var/tempo/traces
 
-  # service:
-  #   type: NodePort
-  #   nodePort: 32001
-  # service:
-  #   type: ClusterIP
-  #   port: 3200
-  #   tempoQuery:
-  #     enabled: true
-
   auth_enabled: false
